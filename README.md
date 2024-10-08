@@ -1,3 +1,2 @@
-# ips
+# Shift Rendering Framework
 
->An interactive particle system.

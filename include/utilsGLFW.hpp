@@ -1,5 +1,7 @@
 #pragma once
 
+#include <bx/platform.h>
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
@@ -45,7 +47,7 @@ static void *glfwNativeDisplayHandle(GLFWwindow *_window) {
 
   return glfwGetX11Display();
 #elif BX_PLATFORM_OSX || BX_PLATFORM_WINDOWS
-  return nullptr
+  return nullptr;
 #endif // BX_PLATFORM_
 }
 

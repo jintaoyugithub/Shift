@@ -16,8 +16,10 @@ target_include_directories(
     ${LIB_NAME} 
     PUBLIC 
     "${CMAKE_SOURCE_DIR}/include/"
-    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/3rdparty/"
-    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/include/"
+    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bgfx/3rdparty/"
+    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bgfx/include/"
+    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bx/include/"
+    "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bimg/include/"
 )
 
 target_link_libraries(

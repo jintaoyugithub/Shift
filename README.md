@@ -1,3 +1,3 @@
-# IPS
+# ips
 
 >An interactive particle system.

@@ -31,6 +31,6 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   endif()
 endif()
 
-add_subdirectory(exts)
+add_subdirectory(ext)
 add_subdirectory(src)
-add_subdirectory(app)
+add_subdirectory(examples)

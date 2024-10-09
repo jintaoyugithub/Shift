@@ -39,7 +39,7 @@ static void *glfwNativeWindowHandle(GLFWwindow *_window) {
 #endif // BX_PLATFORM_
 }
 
-static void *glfwNativeDisplayHandle(GLFWwindow *_window) {
+static void *glfwNativeDisplayHandle() {
 #if BX_PLATFORM_LINUX
   if (GLFW_PLATFORM_WAYLAND == glfwGetPlatform()) {
     return glfwGetWaylandDisplay();

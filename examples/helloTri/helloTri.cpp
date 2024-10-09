@@ -15,13 +15,14 @@ int main(int _agrc, const char **_argv) {
   GLFWwindow *window = glfwCreateWindow(800, 600, "test", nullptr, nullptr);
 
   bgfx::Init init;
-  init.type = bgfx::RendererType::Count;
+  init.type = bgfx::RendererType::OpenGL;
   init.vendorId = BGFX_PCI_ID_NONE;
   init.platformData.nwh = ips::glfwNativeWindowHandle(window);
   init.platformData.ndt = ips::glfwNativeDisplayHandle();
   init.platformData.type = ips::getNativeWindowHandleType();
   init.resolution.width = 800;
   init.resolution.height = 600;
+  init.resolution.reset = BGFX_RESET_VSYNC;
   bgfx::init(init);
 
   // Set view 0 clear state.
@@ -39,6 +40,12 @@ int main(int _agrc, const char **_argv) {
 
     bgfx::frame();
   }
+
+
+  // shutdown
+  bgfx::shutdown();
+  glfwDestroyWindow(window);
+  glfwTerminate();
 
   return 0;
 }

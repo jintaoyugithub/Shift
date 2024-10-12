@@ -1,0 +1,19 @@
+{
+  "OutputFoldersPerTargetSystem": {
+    "本地计算机": [
+      "out\\build\\x64-Debug",
+      "out\\install\\x64-Debug"
+    ]
+  },
+  "ExpandedNodes": [
+    "",
+    "\\examples",
+    "\\examples\\helloTri",
+    "\\include",
+    "\\include\\utils",
+    "\\src",
+    "\\src\\utils"
+  ],
+  "SelectedNode": "\\examples\\helloTri\\helloTri.cpp",
+  "PreviewInSolutionExplorer": true
+}

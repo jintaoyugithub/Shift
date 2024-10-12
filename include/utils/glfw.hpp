@@ -23,7 +23,7 @@
 #endif //
 #include <GLFW/glfw3native.h>
 
-namespace ips {
+namespace shift {
 
 static void *glfwNativeWindowHandle(GLFWwindow *_window) {
 #if BX_PLATFORM_LINUX
@@ -51,4 +51,4 @@ static void *glfwNativeDisplayHandle() {
 #endif // BX_PLATFORM_
 }
 
-} // namespace ips
+} // namespace shift

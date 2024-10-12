@@ -4,11 +4,10 @@ cmake_minimum_required(VERSION 3.25.0)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(
-  IPS
+  Shift
   VERSION 0.1.0
-  LANGUAGES C CXX
-)
-    
+  LANGUAGES C CXX)
+
 # bx lib require c++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)

@@ -11,5 +11,5 @@ target_include_directories(
 target_link_libraries(
     helloTri
     PUBLIC
-    Shift
+    shift_lib
 )

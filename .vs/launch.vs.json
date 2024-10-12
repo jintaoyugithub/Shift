@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "helloTri.exe (examples\\helloTri\\helloTri.exe)",
+      "name": "helloTri.exe (examples\\helloTri\\helloTri.exe)"
+    }
+  ]
+}

@@ -2,4 +2,5 @@
 #include <appBase.hpp>
 
 namespace shift {
+	AppBase::~AppBase() {}
 }

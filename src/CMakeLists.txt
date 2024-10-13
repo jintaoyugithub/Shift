@@ -19,4 +19,4 @@ target_include_directories(
          "${CMAKE_SOURCE_DIR}/ext/spdlog/include/"
 )
 
-target_link_libraries(${LIB_NAME} PUBLIC glm glfw bgfx bx bimg)
+target_link_libraries(${LIB_NAME} PUBLIC glm glfw bgfx bx bimg spdlog)

@@ -6,3 +6,4 @@
 
 - [github issue](https://github.com/LWJGL/lwjgl3/issues/619)
 
+2. Where should I put my shader files?

@@ -1,6 +1,7 @@
 #include <utils/bgfx.hpp>
 
 #include <bx/commandline.h>
+#include <spdlog/spdlog.h>
 
 #include <iostream>
 #include <filesystem>
@@ -18,9 +19,7 @@ namespace shift {
 	}
 
 	static const bgfx::Memory* loadMem(const std::string_view& _fileName) {
-		std::filesystem::path pth = std::filesystem::current_path() / "../../shaders" / _fileName;
-
-		std::ifstream file(pth.string(), std::ios::binary | std::ios::ate);
+		std::ifstream file(static_cast<std::string>(_fileName), std::ios::binary | std::ios::ate);
 		std::streamsize size = file.tellg();
 		file.seekg(0, std::ios::beg);
 		const bgfx::Memory* mem = bgfx::alloc(uint32_t(size + 1));
@@ -29,16 +28,47 @@ namespace shift {
 			mem->data[mem->size - 1] = '\0';
 			return mem;
 		}
+		//spdlog::error("fail to open the file: { }", static_cast<std::string>(_fileName));
 		return nullptr;
 	}
 
 	/// Load shader
-	static bgfx::ShaderHandle loadShader_t(const std::string_view& _filePath) {
-		return bgfx::createShader(loadMem(_filePath));
+	static bgfx::ShaderHandle loadShader_t(const std::string_view& _name) {
+		std::filesystem::path shaderPath = "shaders";
+
+		switch (bgfx::getRendererType())
+		{
+		case bgfx::RendererType::Noop:
+		case bgfx::RendererType::Direct3D11:
+		case bgfx::RendererType::Direct3D12: shaderPath /= "dx11";  break;
+		case bgfx::RendererType::Agc:
+		case bgfx::RendererType::Gnm:        shaderPath /= "pssl";  break;
+		case bgfx::RendererType::Metal:      shaderPath /= "metal"; break;
+		case bgfx::RendererType::Nvn:        shaderPath /= "nvn";   break;
+		case bgfx::RendererType::OpenGL:     shaderPath /= "glsl";  break;
+		case bgfx::RendererType::OpenGLES:   shaderPath /= "essl";  break;
+		case bgfx::RendererType::Vulkan:     shaderPath /= "spirv"; break;
+
+		case bgfx::RendererType::Count:
+			BX_ASSERT(false, "You should not be here!");
+			break;
+		}
+
+		char fileName[512];
+		bx::strCopy(fileName, BX_COUNTOF(fileName), static_cast<std::string>(_name).c_str());
+		bx::strCat(fileName, BX_COUNTOF(fileName), ".bin");
+
+		shaderPath /= fileName;
+
+		//spdlog::info("Loading shader from: { }", shaderPath.string());
+
+		bgfx::ShaderHandle handle = bgfx::createShader(loadMem(shaderPath.string()));
+
+		return handle;
 	}
 
-	bgfx::ShaderHandle loadShader(const std::string_view& _filePath) {
-		return loadShader_t(_filePath);
+	bgfx::ShaderHandle loadShader(const std::string_view& _name) {
+		return loadShader_t(_name);
 	}
 
 	/// Load native window hanlde type

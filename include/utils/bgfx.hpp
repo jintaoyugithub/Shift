@@ -18,7 +18,7 @@ namespace shift {
 	bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName);
 
 	/// Load resources from memory
-	bgfx::ShaderHandle loadShader(const std::string_view& _filePath);
+	bgfx::ShaderHandle loadShader(const std::string_view& _name);
 
 	/// Get native handle type
 	bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType();

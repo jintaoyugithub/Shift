@@ -1,12 +1,16 @@
 namespace shift {
+	class AppBase {
+	public:
+		AppBase(const char* _name, const char* _description, const char* url = "");
 
-class AppBase {
-public:
-  virtual ~AppBase() = 0;
-  virtual void init() = 0;
-  virtual void update() = 0;
-  virtual void shutdown() = 0;
-};
+		virtual ~AppBase() = 0;
 
-int runApp(AppBase *_app, int _argc, char **_agrv);
+		virtual void init(int _argc, const char** _argv, uint32_t width, uint32_t height) = 0;
+
+		virtual bool update() = 0;
+	
+		virtual int shutdown() = 0;
+
+		virtual void run() = 0;
+	};
 } // namespace shift

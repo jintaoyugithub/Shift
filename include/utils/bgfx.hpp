@@ -1,22 +1,25 @@
 #pragma once
 
 #include <bgfx/bgfx.h>
-#include <bx/allocator.h>
-#include <bx/readerwriter.h>
 #include <string_view>
-#include <bx/file.h>
-#include <bx/readerwriter.h>
-#include <bx/string.h>
-#include <iostream>
 
 namespace shift {
-/* bgfx utils */ 
-/// Get native handle type
-bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType();
+	/// unpack input parameters
+	struct Args {
+		// constro
+		Args(int _argc, const char** _argv);
 
-/// Load resources from memory
-bgfx::ShaderHandle loadShader(const std::string_view& _name);
+		bgfx::RendererType::Enum _type;
+		uint16_t _pciId;
+	};
 
-bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName);
+	/* bgfx utils */ 
+	/// Load program from shaders
+	bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName);
 
+	/// Load resources from memory
+	bgfx::ShaderHandle loadShader(const std::string_view& _filePath);
+
+	/// Get native handle type
+	bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType();
 } // namespace shift

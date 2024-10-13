@@ -1,39 +1,107 @@
 #include <utils/bgfx.hpp>
 
+#include <bx/commandline.h>
+
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+
 namespace shift {
-static const bgfx::Memory* loadMem(const std::string_view& _filePath) {
-	return nullptr;
+	static bgfx::ProgramHandle loadProgram_t(const std::string_view& _vsName, const std::string_view& _fsName) {
+		bgfx::ShaderHandle vsShader = loadShader(_vsName);
+		bgfx::ShaderHandle fsShader = loadShader(_fsName);
+		return bgfx::createProgram(vsShader, fsShader);
+	}
+
+	bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName) {
+		return loadProgram_t(_vsName, _fsName);
+	}
+
+	static const bgfx::Memory* loadMem(const std::string_view& _fileName) {
+		std::filesystem::path pth = std::filesystem::current_path() / "../../shaders" / _fileName;
+
+		std::ifstream file(pth.string(), std::ios::binary | std::ios::ate);
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		const bgfx::Memory* mem = bgfx::alloc(uint32_t(size + 1));
+		if (file.read((char*)mem->data, size))
+		{
+			mem->data[mem->size - 1] = '\0';
+			return mem;
+		}
+		return nullptr;
+	}
+
+	/// Load shader
+	static bgfx::ShaderHandle loadShader_t(const std::string_view& _filePath) {
+		return bgfx::createShader(loadMem(_filePath));
+	}
+
+	bgfx::ShaderHandle loadShader(const std::string_view& _filePath) {
+		return loadShader_t(_filePath);
+	}
+
+	/// Load native window hanlde type
+	static bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType_t() {
+		return bgfx::NativeWindowHandleType::Default;
+	}
+
+	bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType() {
+		return getNativeWindowHandleType_t();
+	}
+
+	/// Unpack args
+	Args::Args(int _argc, const char** _argv) : 
+		_type(bgfx::RendererType::Enum::Count),
+		_pciId(BGFX_PCI_ID_NONE) {
+		
+		bx::CommandLine cmdLine(_argc, _argv);
+
+		if (cmdLine.hasArg("gl"))
+		{
+			_type = bgfx::RendererType::OpenGL;
+		}
+		else if (cmdLine.hasArg("vk"))
+		{
+			_type = bgfx::RendererType::Vulkan;
+		}
+		else if (cmdLine.hasArg("noop"))
+		{
+			_type = bgfx::RendererType::Noop;
+		}
+		else if (cmdLine.hasArg("d3d11"))
+		{
+			_type = bgfx::RendererType::Direct3D11;
+		}
+		else if (cmdLine.hasArg("d3d12"))
+		{
+			_type = bgfx::RendererType::Direct3D12;
+		}
+		else if (BX_ENABLED(BX_PLATFORM_OSX))
+		{
+			if (cmdLine.hasArg("mtl"))
+			{
+				_type = bgfx::RendererType::Metal;
+			}
+		}
+
+		if (cmdLine.hasArg("amd"))
+		{
+			_pciId = BGFX_PCI_ID_AMD;
+		}
+		else if (cmdLine.hasArg("nvidia"))
+		{
+			_pciId = BGFX_PCI_ID_NVIDIA;
+		}
+		else if (cmdLine.hasArg("intel"))
+		{
+			_pciId = BGFX_PCI_ID_INTEL;
+		}
+		else if (cmdLine.hasArg("sw"))
+		{
+			_pciId = BGFX_PCI_ID_SOFTWARE_RASTERIZER;
+		}
+	}
+
 }
 
-static bgfx::ShaderHandle loadShader(bx::FileReaderI* _reader, const std::string_view& _name) {
-	std::string_view shaderPath;
-
-	switch (bgfx::getRendererType()) {
-	case bgfx::RendererType::Noop:
-	case bgfx::RendererType::Direct3D11:
-	case bgfx::RendererType::Direct3D12: shaderPath = "";  break;
-	case bgfx::RendererType::Agc:
-	case bgfx::RendererType::Gnm:        shaderPath;  break;
-	case bgfx::RendererType::Metal:      shaderPath; break;
-	case bgfx::RendererType::Nvn:        shaderPath;   break;
-	case bgfx::RendererType::OpenGL:     shaderPath;  break;
-	case bgfx::RendererType::OpenGLES:   shaderPath;  break;
-	case bgfx::RendererType::Vulkan:     shaderPath; break;
-
-	case bgfx::RendererType::Count:
-		BX_ASSERT(false, "You should not be here!");
-		break;
-	};
-
-	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(_name));
-	return handle;
-}
-
-bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType() {
-	return bgfx::NativeWindowHandleType::Default;
-}
-
-bgfx::ShaderHandle loadShader(const std::string_view& _name) {
-	return loadShader(_name);
-}
-}

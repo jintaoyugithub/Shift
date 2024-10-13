@@ -1,1 +1,2 @@
-add_subdirectory(helloTri)
+add_subdirectory(helloBgfx)
+add_subdirectory(cube)

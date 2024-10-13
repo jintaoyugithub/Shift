@@ -1,7 +1,7 @@
-add_executable(helloTri helloTri.cpp)
+add_executable(helloBfgx helloBgfx.cpp)
 
 target_include_directories(
-    helloTri
+    helloBfgx
     PUBLIC 
     "${CMAKE_SOURCE_DIR}/include/"
     "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/3rdparty/"
@@ -9,7 +9,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    helloTri
+    helloBfgx
     PUBLIC
     shift_lib
 )

@@ -8,14 +8,31 @@
 #include <fstream>
 
 namespace shift {
-	static bgfx::ProgramHandle loadProgram_t(const std::string_view& _vsName, const std::string_view& _fsName) {
-		bgfx::ShaderHandle vsShader = loadShader(_vsName);
-		bgfx::ShaderHandle fsShader = loadShader(_fsName);
-		return bgfx::createProgram(vsShader, fsShader);
+	static bgfx::ProgramHandle loadProgram_t(std::initializer_list<std::string_view> _shaderNames) {
+		if (_shaderNames.size() > 0) {
+			auto itr = _shaderNames.begin();
+			switch (_shaderNames.size()) {
+			case 1:
+				spdlog::info("Creating compute shader");
+				bgfx::ShaderHandle csShader = loadShader(*itr);
+				return bgfx::createProgram(csShader);
+			case 2:
+				spdlog::info("Creating vertex and fragment shader");
+				bgfx::ShaderHandle vsShader = loadShader(*itr);
+				bgfx::ShaderHandle fsShader = loadShader(*(++itr));
+				return bgfx::createProgram(vsShader, fsShader);
+			default:
+				spdlog::error("incorrect shader name number");
+				break;
+			}
+		} else {
+			spdlog::error("require at least one shader name");
+			return BGFX_INVALID_HANDLE;
+		}
 	}
 
-	bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName) {
-		return loadProgram_t(_vsName, _fsName);
+	bgfx::ProgramHandle loadProgram(std::initializer_list<std::string_view> _shaderNames) {
+		return loadProgram_t(_shaderNames);
 	}
 
 	static const bgfx::Memory* loadMem(const std::string_view& _fileName) {

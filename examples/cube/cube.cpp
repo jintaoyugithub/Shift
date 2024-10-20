@@ -52,13 +52,8 @@ static const uint16_t cubeTriList[] = {
 };
 
 class ExampleCube final : public shift::AppBaseGLFW {
-public:
-    ExampleCube(const char* name, const char* description, const char* url) :
-        shift::AppBaseGLFW(name, description, url) {}
 
-    ~ExampleCube() { shutdown(); };
-
-    virtual void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
+    void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
         shift::AppBaseGLFW::init(_argc, _argv, width, height);
 
         // don't forget to call this func otherwise it won't render anything
@@ -76,12 +71,14 @@ public:
 
         _vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), PosColorVertex::_layout);
         _ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-        _program = shift::loadProgram("vs_cube.sc", "fs_cube.sc");
+        _program = shift::loadProgram({ "vs_cube.sc", "fs_cube.sc" });
     }
 
     bool update() override {
         // Set up all matrix 
-        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -35.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 model = glm::identity<glm::mat4>();
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 0.7, 0.2));
+        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
         bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
         bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
@@ -93,6 +90,7 @@ public:
 			glfwPollEvents();
 
             // TODO: rendering everything here
+            bgfx::setTransform(&model[0][0]);
             bgfx::setVertexBuffer(0, _vbh);
             bgfx::setIndexBuffer(_ibh);
             bgfx::setState(BGFX_STATE_DEFAULT);
@@ -109,9 +107,19 @@ public:
     void shutdown() override {
         // clean all the buffer data, shader and so on 
         spdlog::info("Shutdown func call by cube");
+
+        bgfx::destroy(_vbh);
+        bgfx::destroy(_ibh);
     }
 
-    virtual void run(int _argc, const char** _argv) override {
+
+public:
+    ExampleCube(const char* name, const char* description, const char* url) :
+        shift::AppBaseGLFW(name, description, url) {}
+
+    ~ExampleCube() { shutdown(); };
+
+    void run(int _argc, const char** _argv) override {
         AppBaseGLFW::run(_argc, _argv);
     }
 
@@ -126,7 +134,7 @@ int main(int _argc, const char** _argv) {
     ExampleCube cube{ 
         "Example Cube", 
         "Rendering a Cube with Shift frmework", 
-        "https://github.com/jintaoyugithub/Shift" 
+        "https://github.com/jintaoyugithub/Shift/tree/main/examples/cube"
     };
     cube.run(_argc, _argv);
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bgfx/bgfx.h>
 #include <utils/bgfx.hpp>
 #include <utils/glfw.hpp>
@@ -7,3 +9,5 @@
 
 #define SHIFT_DEFAULT_WIDTH 800
 #define SHIFT_DEFAULT_HEIGHT 600
+
+

@@ -1,7 +1,7 @@
 $input a_position, a_color0
 $output v_color0
 
-#include "../../../ext/bgfx.cmake/bgfx/src/bgfx_shader.sh"
+#include "../../utils/bgfx_shader.sh"
 
 void main()
 {

@@ -28,8 +28,16 @@ namespace shift {
 		init.resolution.reset = BGFX_RESET_VSYNC;
 		bgfx::init(init);
 
+		// don't forget to call this func otherwise it won't render anything
+        bgfx::setViewClear(0
+            , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+            , 0x303030ff
+            , 1.0f
+            , 0
+        );
+
 		// enable debug text
-		bgfx::setDebug(BGFX_DEBUG_NONE);
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
 
 		// set view port
 		bgfx::setViewRect(0, 0, 0, _width, _height);

@@ -5,6 +5,7 @@ set(SOURCES
     appBaseGLFW.cpp
     "utils/bgfx.cpp"
     "utils/glfw.cpp"
+    "utils/common.cpp"
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})

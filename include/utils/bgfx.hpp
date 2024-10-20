@@ -2,6 +2,7 @@
 
 #include <bgfx/bgfx.h>
 #include <string_view>
+#include <initializer_list>
 
 namespace shift {
 	/// unpack input parameters
@@ -15,7 +16,7 @@ namespace shift {
 
 	/* bgfx utils */ 
 	/// Load program from shaders
-	bgfx::ProgramHandle loadProgram(const std::string_view& _vsName, const std::string_view& _fsName);
+	bgfx::ProgramHandle loadProgram(std::initializer_list<std::string_view> _names);
 
 	/// Load resources from memory
 	bgfx::ShaderHandle loadShader(const std::string_view& _name);

@@ -17,7 +17,13 @@ bgfx_compile_shaders(
 # compile all compute shaders
 bgfx_compile_shaders(
 	TYPE COMPUTE
-	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/commputeShader/computeShader_cs.sc"
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/buffer_cs.sc"
+	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
+)
+
+bgfx_compile_shaders(
+	TYPE COMPUTE
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/image_cs.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 
@@ -27,6 +33,8 @@ add_executable(computeShader
     # include all the shader files
 	"${CMAKE_SOURCE_DIR}/shaders/common/quad_vs.sc"
 	"${CMAKE_SOURCE_DIR}/shaders/common/quad_fs.sc"
+	"${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/image_cs.sc"
+	"${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/buffer_cs.sc"
 )
 
 target_include_directories(

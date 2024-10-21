@@ -52,6 +52,7 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
     void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
         shift::AppBaseGLFW::init(_argc, _argv, width, height);
 
+        /* Data required by Quad Shader*/
         quadPosTexCoord::init();
 
         _vbhQuad = bgfx::createVertexBuffer(
@@ -64,6 +65,30 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
         );
 
         _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
+
+        /* Check if compute shader is supported */
+        const bgfx::Caps* caps = bgfx::getCaps();                      // this func return renderer capabilities
+        _computeSupported = !!(caps->supported & BGFX_CAPS_COMPUTE);
+
+        /* Check if indirect rendering is supported */
+        _indirectSupported = !!(caps->supported & BGFX_CAPS_DRAW_INDIRECT);
+
+        /* Data required by Compute Shader*/
+        if (_computeSupported) {
+            // buffers
+            bgfx::VertexLayout dvbLayout;
+            dvbLayout
+                .begin()
+                .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
+                .end();
+            _dvbhCS = bgfx::createDynamicVertexBuffer(1 << 15, dvbLayout, BGFX_BUFFER_COMPUTE_READ_WRITE);
+
+            // textures/images
+        }
+
+        // create a compute shader program
+        _csProgramWithBuffer = shift::loadProgram({ "buffer_cs.sc" });
+        //_csProgramWithImage = shift::loadProgram({ "image_cs.sc" });
     }
 
     bool update() override {
@@ -72,14 +97,24 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             glfwPollEvents();
 
             // TODO: rendering everything here
-            bgfx::setVertexBuffer(0, _vbhQuad);
-            bgfx::setIndexBuffer(_ibhQuad);
-            bgfx::setState(BGFX_STATE_DEFAULT);
-            bgfx::submit(0, _quadProgram);
+            /* Compute shader */
+            if (_computeSupported) {
+                bgfx::setBuffer(0, _dvbhCS, bgfx::Access::Write);
+                // specified the work group count
+                bgfx::dispatch(0, _csProgramWithBuffer, 8,1,1);
 
-            bgfx::frame();
+                /* Quad rendering */
+                bgfx::setVertexBuffer(0, _vbhQuad);
+                bgfx::setIndexBuffer(_ibhQuad);
+                bgfx::setBuffer(1, _dvbhCS, bgfx::Access::Read);
+                // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
+                bgfx::setState(BGFX_STATE_DEFAULT);
+                bgfx::submit(0, _quadProgram);
+    
+                bgfx::frame();
 
-            return true;
+                return true;
+            }
         }
 
         return false;
@@ -89,11 +124,13 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
         spdlog::info("Shutdown func called by ExampleComputeShader");
 
         // clean all the programs and buffers
-        //bgfx::destroy(_csProgram);
+        bgfx::destroy(_csProgramWithBuffer);
+        //bgfx::destroy(_csProgramWithImage);
         bgfx::destroy(_quadProgram);
         bgfx::destroy(_vbhQuad);
         bgfx::destroy(_ibhQuad);
-        //bgfx::destroy(_dvbhCS);
+        bgfx::destroy(_dvbhCS);
+        //bgfx::destroy(_imgCS);
     }
 
 
@@ -109,6 +146,9 @@ public:
     }
 
 private:
+    bool _computeSupported;
+    bool _indirectSupported;
+
     bgfx::ProgramHandle _csProgramWithBuffer;
     bgfx::ProgramHandle _csProgramWithImage;
     bgfx::ProgramHandle _quadProgram;

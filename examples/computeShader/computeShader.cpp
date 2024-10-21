@@ -1,5 +1,3 @@
-#pragma once
-
 #include <utils/common.hpp>
 
 #include <glm/glm.hpp>
@@ -52,20 +50,6 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
     void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
         shift::AppBaseGLFW::init(_argc, _argv, width, height);
 
-        /* Data required by Quad Shader*/
-        quadPosTexCoord::init();
-
-        _vbhQuad = bgfx::createVertexBuffer(
-            bgfx::makeRef(quadVertices, sizeof(quadVertices)),
-            quadPosTexCoord::_layout
-        );
-
-        _ibhQuad = bgfx::createIndexBuffer(
-            bgfx::makeRef(quadIndices, sizeof(quadIndices))
-        );
-
-        _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
-
         /* Check if compute shader is supported */
         const bgfx::Caps* caps = bgfx::getCaps();                      // this func return renderer capabilities
         _computeSupported = !!(caps->supported & BGFX_CAPS_COMPUTE);
@@ -73,8 +57,22 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
         /* Check if indirect rendering is supported */
         _indirectSupported = !!(caps->supported & BGFX_CAPS_DRAW_INDIRECT);
 
-        /* Data required by Compute Shader*/
         if (_computeSupported) {
+            /* Data required by Quad Shader*/
+            quadPosTexCoord::init();
+
+            _vbhQuad = bgfx::createVertexBuffer(
+                bgfx::makeRef(quadVertices, sizeof(quadVertices)),
+            quadPosTexCoord::_layout
+            );
+
+            _ibhQuad = bgfx::createIndexBuffer(
+                bgfx::makeRef(quadIndices, sizeof(quadIndices))
+            );
+
+            _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
+
+            /* Data required by Compute Shader*/
             // buffers
             bgfx::VertexLayout dvbLayout;
             dvbLayout
@@ -84,11 +82,21 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             _dvbhCS = bgfx::createDynamicVertexBuffer(1 << 15, dvbLayout, BGFX_BUFFER_COMPUTE_READ_WRITE);
 
             // textures/images
+
+
+            // create shader programs
+            _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
+            bgfx::setBuffer(0, _dvbhCS, bgfx::Access::Read);
+
+            // compute shaders
+            _csProgramWithBuffer = shift::loadProgram({ "buffer_cs.sc" });
+            bgfx::setBuffer(0, _dvbhCS, bgfx::Access::Write);
+            // why dispatch at init?
+            bgfx::dispatch(0, _csProgramWithBuffer, 64, 1, 1);
+
+            //_csProgramWithImage = shift::loadProgram({ "image_cs.sc" });
         }
 
-        // create a compute shader program
-        _csProgramWithBuffer = shift::loadProgram({ "buffer_cs.sc" });
-        //_csProgramWithImage = shift::loadProgram({ "image_cs.sc" });
     }
 
     bool update() override {
@@ -101,12 +109,12 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             if (_computeSupported) {
                 bgfx::setBuffer(0, _dvbhCS, bgfx::Access::Write);
                 // specified the work group count
-                bgfx::dispatch(0, _csProgramWithBuffer, 8,1,1);
+                bgfx::dispatch(0, _csProgramWithBuffer, 1,1,1);
 
                 /* Quad rendering */
                 bgfx::setVertexBuffer(0, _vbhQuad);
                 bgfx::setIndexBuffer(_ibhQuad);
-                bgfx::setBuffer(1, _dvbhCS, bgfx::Access::Read);
+                bgfx::setBuffer(0, _dvbhCS, bgfx::Access::Read);
                 // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
                 bgfx::setState(BGFX_STATE_DEFAULT);
                 bgfx::submit(0, _quadProgram);

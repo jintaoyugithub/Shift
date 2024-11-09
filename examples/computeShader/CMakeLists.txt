@@ -18,12 +18,14 @@ bgfx_compile_shaders(
 bgfx_compile_shaders(
 	TYPE COMPUTE
 	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/buffer_cs.sc"
+	VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/common/quad_varying.def.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 
 bgfx_compile_shaders(
 	TYPE COMPUTE
 	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/computeShader/image_cs.sc"
+	VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/common/quad_varying.def.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 

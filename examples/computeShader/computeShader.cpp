@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <appBaseGLFW.hpp>
+            
+glm::vec4 test = glm::vec4(1.0f);
 
 /// data used for quad
 struct quadPosTexCoord {
@@ -28,12 +30,24 @@ struct quadPosTexCoord {
 
 bgfx::VertexLayout quadPosTexCoord::_layout;
 
+//quadPosTexCoord quadVertices[] = {
+//	{-1.0f, -1.0f, 0.0f, 0.0f},
+//	{ 1.0f, -1.0f, 1.0f, 0.0f},
+//	{-1.0f,  1.0f, 0.0f, 1.0f},
+//	{ 1.0f,  1.0f, 1.0f, 1.0f},
+//};
+
 quadPosTexCoord quadVertices[] = {
-	{-1.0f, -1.0f, 0.0f, 0.0f},
-	{ 1.0f, -1.0f, 1.0f, 0.0f},
-	{-1.0f,  1.0f, 0.0f, 1.0f},
-	{ 1.0f,  1.0f, 1.0f, 1.0f},
+	{-1.0f,  1.0f, 0.0f, 0.0f},
+	{ 1.0f,  1.0f, 1.0f, 0.0f},
+	{-1.0f, -1.0f, 0.0f, 1.0f},
+	{ 1.0f, -1.0f, 1.0f, 1.0f},
 };
+
+//const uint16_t quadIndices[] = {
+//    2, 1, 0,
+//    2, 3, 1,
+//};
 
 const uint16_t quadIndices[] = {
     2, 1, 0,
@@ -77,8 +91,7 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             _test2 = bgfx::createUniform("test2", bgfx::UniformType::Vec4);
 
             // create quad program
-            glm::vec4 test2 = glm::vec4(1.0f);
-            bgfx::setUniform(_test2, &test2);
+            bgfx::setUniform(_test2, &test);
             _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
 
             /* Data required by Compute Shader*/
@@ -99,7 +112,6 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             // textures/images
 
             // create compute shaders
-            glm::vec4 test = glm::vec4(1.0f);
             bgfx::setUniform(_test, &test);
             _csProgramWithBuffer = shift::loadProgram({ "buffer_cs.sc" });
 
@@ -114,46 +126,47 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
     }
 
     bool update() override {
+
         if (!glfwWindowShouldClose(_window)) {
             glfwSwapBuffers(_window);
             glfwPollEvents();
 
             // TODO: rendering everything here
             /* Compute shader */
-            if (_computeSupported) {
-                bgfx::setBuffer(0, s_buffers, bgfx::Access::Write);
-                // specified the work group count
-                glm::vec4 test = glm::vec4(1.0f);
-                bgfx::setUniform(_test, &test, 1);
-                bgfx::dispatch(0, _csProgramWithBuffer, kMaxParticleCount / kThreadGroupUpdateSize, 1, 1);
-            }
+            bgfx::setBuffer(0, s_buffers, bgfx::Access::Write);
+            // specified the work group count
+            bgfx::setUniform(_test, &test, 1);
+            bgfx::dispatch(0, _csProgramWithBuffer, kMaxParticleCount / kThreadGroupUpdateSize, 1, 1);
 
+
+            /* Quad rendering */
             glm::mat4 model = glm::mat4(1.0f);
-            glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::rotate(model, glm::radians(70.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
             bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
             bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
+            bgfx::touch(0);
 
-            /* Quad rendering */
-            glm::vec4 test = glm::vec4(1.0f);
             bgfx::setUniform(_test2, &test, 1);
             bgfx::setTransform(&model[0][0]);
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
             bgfx::setBuffer(0, s_buffers, bgfx::Access::Read);
             // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
-            //bgfx::setState(BGFX_STATE_DEFAULT);
-            bgfx::setState(0
-                //| BGFX_STATE_PT_LINESTRIP
-                | BGFX_STATE_WRITE_RGB
-                | BGFX_STATE_BLEND_ADD
-                | BGFX_STATE_DEPTH_TEST_ALWAYS
-            );
+            bgfx::setState(BGFX_STATE_DEFAULT);
+            //bgfx::setState(0
+            //    //| BGFX_STATE_PT_LINESTRIP
+            //    | BGFX_STATE_WRITE_RGB
+            //    | BGFX_STATE_BLEND_ADD
+            //    | BGFX_STATE_DEPTH_TEST_ALWAYS
+            //);
             //bgfx::setState(BGFX_STATE_CULL_CW);
             bgfx::submit(0, _quadProgram);
     
             bgfx::frame();
+
+
             return true;
         }
 

@@ -9,7 +9,7 @@ BUFFER_RO(buffers, vec4, 0);
 void main() {
 	//gl_FragColor = vec4(0.6, v2f_texCoord0, 1.0);
 	vec4 keep = test2;
-	gl_FragColor = buffers[test2.x];
+	gl_FragColor = buffers[int(test2.x)];
 }
 
 //Some notes

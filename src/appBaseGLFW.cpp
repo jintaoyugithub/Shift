@@ -18,8 +18,8 @@ namespace shift {
 
 		// init bgfx
 		bgfx::Init init;
-		init.type = args._type;
-		//init.type = bgfx::RendererType::OpenGL;
+		//init.type = args._type;
+		init.type = bgfx::RendererType::OpenGL;
 		init.vendorId = args._pciId;
 		init.platformData.nwh = shift::glfwNativeWindowHandle(_window);
 		init.platformData.ndt = shift::glfwNativeDisplayHandle();
@@ -111,7 +111,6 @@ namespace shift {
 		init(_argc, _argv, getWidth(), getHeight());
 
 		while (update()) {
-
 		}
 	}
 }

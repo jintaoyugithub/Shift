@@ -13,6 +13,7 @@ glm::vec4 test = glm::vec4(1.0f);
 struct quadPosTexCoord {
 	float _x;
 	float _y;
+    float _z;
 
 	float _u;
 	float _v;

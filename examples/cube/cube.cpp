@@ -1,9 +1,5 @@
 #include <utils/common.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <appBaseGLFW.hpp>
 
 struct PosColorVertex {
@@ -82,7 +78,6 @@ class ExampleCube final : public shift::AppBaseGLFW {
         glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
         bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
         bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
-        bgfx::touch(0);
 
 
 		if (!glfwWindowShouldClose(_window)) {
@@ -110,6 +105,7 @@ class ExampleCube final : public shift::AppBaseGLFW {
 
         bgfx::destroy(_vbh);
         bgfx::destroy(_ibh);
+        bgfx::destroy(_program);
     }
 
 

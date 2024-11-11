@@ -5,6 +5,10 @@
 #include <utils/glfw.hpp>
 #include <bx/math.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <spdlog/spdlog.h>
 
 #define SHIFT_DEFAULT_WIDTH 800

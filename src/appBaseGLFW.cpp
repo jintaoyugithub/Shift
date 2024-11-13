@@ -110,7 +110,6 @@ namespace shift {
 		// init all resources
 		init(_argc, _argv, getWidth(), getHeight());
 
-		while (update()) {
-		}
+		while (update()) {}
 	}
 }

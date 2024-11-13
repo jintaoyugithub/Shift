@@ -1,3 +1,5 @@
+#pragma once
+
 #include <utils/common.hpp>
 #include "appBase.hpp"
 

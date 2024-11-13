@@ -1,7 +1,6 @@
 #include <utils/common.hpp>
 #include <appBaseGLFW.hpp>
 
-/// data used for quad
 struct quadPosTexCoord {
 	float _x;
 	float _y;
@@ -36,26 +35,22 @@ static const uint16_t quadIndices[] = {
     2, 3, 0,
 };
 
-const uint32_t kThreadGroupUpdateSize = 512;
-const uint32_t kMaxParticleCount = 32 * 1024;
-
-class ExampleComputeShader : public shift::AppBaseGLFW {
-
+class ExampleFluidSim : public shift::AppBaseGLFW {
     void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
         shift::AppBaseGLFW::init(_argc, _argv, width, height);
 
-        // init the input event system
+        // init input event handle system
         gleqTrackWindow(_window);
 
-        /* Check if compute shader is supported */
-        const bgfx::Caps* caps = bgfx::getCaps();                      // this func return renderer capabilities
+         /* Check if compute shader is supported */
+        const bgfx::Caps* caps = bgfx::getCaps();                    
         _computeSupported  = !!(caps->supported & BGFX_CAPS_COMPUTE);
 
         /* Check if indirect rendering is supported */
         _indirectSupported = !!(caps->supported & BGFX_CAPS_DRAW_INDIRECT);
 
-        if (_computeSupported) {
-            /* Data required by Quad Shader*/
+        if(_computeSupported) {
+            // init vertex layout
             quadPosTexCoord::init();
 
             _vbhQuad = bgfx::createVertexBuffer(
@@ -67,26 +62,57 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
                 bgfx::makeRef(quadIndices, sizeof(quadIndices))
             );
 
-            // create quad program
-            _quadProgram = shift::loadProgram({ "quad_vs.sc", "quad_fs.sc" });
+            _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            /* Data required by Compute Shader*/
-            // buffers
-            bgfx::VertexLayout dvbLayout;
-            dvbLayout
+
+            /* Init all the buffers that the compute shader will use */
+            bgfx::VertexLayout fluidBufferLayout;
+            fluidBufferLayout
                 .begin()
                 .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
                 .end();
-            // which means s_buffers will have the index range from 0 - (512*512)-1
-            // have to be careful when using the global invocation id, it have to match the size of the buffer
-            // otherwise it might be the reason cause debug break
-            // note this is memory size
-            s_buffers = bgfx::createDynamicVertexBuffer(1<<15, dvbLayout, BGFX_BUFFER_COMPUTE_READ_WRITE);
 
-            // textures/images
+            _prevDensityField = bgfx::createDynamicVertexBuffer(
+                getHeight() * getWidth() * 4 * sizeof(float),    // mem size
+                fluidBufferLayout,                                          // vertex fluidBufferLayout
+                BGFX_BUFFER_COMPUTE_READ_WRITE                   // buffer access
+            );
 
-            // create compute shaders
-            _csProgramWithBuffer = shift::loadProgram({ "buffer_cs.sc" });
+            _prevVelocityField = bgfx::createDynamicVertexBuffer(
+                getHeight() * getWidth() * 4 * sizeof(float),    
+                fluidBufferLayout,                                          
+                BGFX_BUFFER_COMPUTE_READ_WRITE                   
+            );
+
+            _curDensityField = bgfx::createDynamicVertexBuffer(
+                getHeight() * getWidth() * 4 * sizeof(float),    
+                fluidBufferLayout,                                          
+                BGFX_BUFFER_COMPUTE_READ_WRITE                   
+            );
+
+            _curVelocityField = bgfx::createDynamicVertexBuffer(
+                getHeight() * getWidth() * 4 * sizeof(float),    
+                fluidBufferLayout,                                          
+                BGFX_BUFFER_COMPUTE_READ_WRITE                   
+            );
+
+            // imporve performance while put them together??
+            _csDensityProgram = shift::loadProgram({"density_update_cs.sc"});
+            _csVelocityProgram = shift::loadProgram({"velocity_update_cs.sc"});
+        }
+    }
+
+    void shutdown() override {
+        if(_computeSupported) {
+            bgfx::destroy(_csDensityProgram);
+            bgfx::destroy(_csVelocityProgram);
+            bgfx::destroy(_quadProgram);
+            bgfx::destroy(_vbhQuad);
+            bgfx::destroy(_ibhQuad);
+            bgfx::destroy(_prevVelocityField);
+            bgfx::destroy(_prevDensityField);
+            bgfx::destroy(_curVelocityField);
+            bgfx::destroy(_curDensityField);
         }
     }
 
@@ -95,17 +121,9 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
             glfwSwapBuffers(_window);
             glfwPollEvents();
 
-            // TODO: rendering everything here
-            /* Compute shader */
-            bgfx::setBuffer(0, s_buffers, bgfx::Access::Write);
-            // specified the work group count
-            bgfx::dispatch(0, _csProgramWithBuffer, kMaxParticleCount / kThreadGroupUpdateSize, 1, 1);
-
-
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
-            bgfx::setBuffer(0, s_buffers, bgfx::Access::Read);
             // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
             bgfx::submit(0, _quadProgram);
@@ -141,29 +159,11 @@ class ExampleComputeShader : public shift::AppBaseGLFW {
         return false;
     }
 
-    void shutdown() override {
-        spdlog::info("Shutdown func called by ExampleComputeShader");
-
-        // clean all the programs and buffers
-        if (_computeSupported) {
-            bgfx::destroy(_csProgramWithBuffer);
-            //bgfx::destroy(_csProgramWithImage);
-            bgfx::destroy(_quadProgram);
-            bgfx::destroy(_vbhQuad);
-            bgfx::destroy(_ibhQuad);
-            bgfx::destroy(s_buffers);
-            //bgfx::destroy(_imgCS);
-        }
-    }
-
 public:
-    ExampleComputeShader(const char* name, const char* description, const char* url)
-        : shift::AppBaseGLFW(name, description, url) {}
-    ~ExampleComputeShader() {
-        shutdown();
-    }
+    ExampleFluidSim(const char* name, const char* description, const char* url) : shift::AppBaseGLFW(name, description, url) {}
+    ~ExampleFluidSim() { shutdown(); };
 
-    void run(int _argc, const char** _argv) {
+    void run(int _argc, const char** _argv) override {
         shift::AppBaseGLFW::run(_argc, _argv);
     }
 
@@ -174,22 +174,24 @@ private:
     GLEQevent _event;
     bool pressed = false;
 
-    bgfx::ProgramHandle _csProgramWithBuffer;
-    bgfx::ProgramHandle _csProgramWithImage;
+    bgfx::ProgramHandle _csDensityProgram;
+    bgfx::ProgramHandle _csVelocityProgram;
     bgfx::ProgramHandle _quadProgram;
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
-    bgfx::DynamicVertexBufferHandle s_buffers;
-    bgfx::TextureHandle _imgCS;
+    bgfx::DynamicVertexBufferHandle _prevVelocityField;
+    bgfx::DynamicVertexBufferHandle _curVelocityField;
+    bgfx::DynamicVertexBufferHandle _prevDensityField;
+    bgfx::DynamicVertexBufferHandle _curDensityField;
 };
 
 int main(int _argc, const char** _argv) {
-    ExampleComputeShader csExample {
-        "Compute shader example",
-        "A example shows how to use compute shader with Shift",
-        "https://github.com/jintaoyugithub/Shift/tree/main/examples/computeShader"
+    ExampleFluidSim fluidSim {
+        "Fluid simulation example",
+        "A Example of Eulerian fluid simulation with compute shader",
+        "https://github.com/jintaoyugithub/Shift/tree/main/examples/fluidSim"
     };
-    csExample.run(_argc, _argv);
+    fluidSim.run(_argc, _argv);
 
     return 0;
 }

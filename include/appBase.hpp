@@ -1,3 +1,5 @@
+#pragma once
+
 namespace shift {
 	class AppBase {
 	public:

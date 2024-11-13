@@ -1,7 +1,5 @@
 #include<utils/common.hpp>
 
-#include <iostream>
-
 int main(int _agrc, const char **_argv) {
   std::cout << "Hello tri" << std::endl;
 

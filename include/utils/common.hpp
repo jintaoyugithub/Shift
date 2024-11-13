@@ -11,6 +11,12 @@
 
 #include <spdlog/spdlog.h>
 
+#include <iostream>
+
+#define GLEQ_IMPLEMENTATION
+#define GLEQ_STATIC
+#include <gleq.hpp>
+
 #define SHIFT_DEFAULT_WIDTH 800
 #define SHIFT_DEFAULT_HEIGHT 600
 

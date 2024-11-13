@@ -20,6 +20,7 @@ target_include_directories(
          "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bimg/include/"
          "${CMAKE_SOURCE_DIR}/ext/spdlog/include/"
          "${CMAKE_SOURCE_DIR}/ext/imgui/"
+         "${CMAKE_SOURCE_DIR}/ext/gleq/"
 )
 
 target_link_libraries(

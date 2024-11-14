@@ -1,12 +1,9 @@
 #include <utils/common.hpp>
 #include <appBaseGLFW.hpp>
 
-// size of the area whcih perform the fluid sim
-const uint16_t size = 254;
-
 struct Mouse {
-    double x;
-    double y;
+    double x = 0.0;
+    double y = 0.0;
     bool isPressed = false;
 };
 
@@ -126,7 +123,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
             bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
             // dispatch the init compute shader
-            bgfx::dispatch(0, _csInit, 512, 1, 1);
+            bgfx::dispatch(0, _csInit, 16, 16, 1);
         }
     }
 
@@ -157,7 +154,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             bgfx::setBuffer(1, _curDensityField, bgfx::Access::Write);
             glm::vec4 mousePos = glm::vec4(_mouse.x, _mouse.y, _mouse.isPressed, 0.0);
             bgfx::setUniform(_mousePos, &mousePos, 1);
-            bgfx::dispatch(0, _csDensityUpdate, 512, 1, 1);
+            bgfx::dispatch(0, _csDensityUpdate, 16, 16, 1);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
@@ -181,7 +178,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
                         if(_mouse.isPressed) {
                             // set up uniforms
                             glfwGetCursorPos(_window, &_mouse.x, &_mouse.y);
-                            std::cout << _mouse.x << " " << _mouse.y << std::endl;
+                            //std::cout << _mouse.x << " " << _mouse.y << std::endl;
                         }
                         break;
                     case GLEQ_BUTTON_RELEASED:

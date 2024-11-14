@@ -3,7 +3,7 @@ $input v2f_texCoord0
 #include "../../utils/bgfx_compute.sh"
 #include "fluidSim_utils.sh"
 
-#define bufferSize 256
+#define bufferSize 1024
 
 BUFFER_RO(curDensityField, float, 0);
 BUFFER_RO(curVelocityField, vec2, 1);

@@ -4,7 +4,7 @@
 BUFFER_WO(prevDensityField, float, 0);
 BUFFER_WO(prevVelocityField, vec2, 1);
 
-NUM_THREADS(16, 16, 1)
+NUM_THREADS(32, 32, 1)
 void main() {
     // init the density field and velocity field
     uint index = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * uBufferHeight;

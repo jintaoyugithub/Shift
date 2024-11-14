@@ -63,6 +63,8 @@ void initParamsData(paramsData* _data) {
 }
 
 float lastFrame = 0.0f;
+const int kThreadGroupSizeX = 32;
+const int kThreadGroupSizeY = 32;
 
 class ExampleFluidSim : public shift::AppBaseGLFW {
     void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
@@ -148,7 +150,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
             bgfx::setUniform(_uhParams, &_uParams, 3);
             // dispatch the init compute shader
-            bgfx::dispatch(0, _csInit, 16, 16, 1);
+            bgfx::dispatch(
+                0, 
+                _csInit, 
+                _uParams.bufferWidth / kThreadGroupSizeX, 
+                _uParams.bufferHeight / kThreadGroupSizeY, 
+                1);
         }
     }
 
@@ -177,13 +184,18 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             float curFrame = glfwGetTime();
             _uParams.deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
-            //std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
             /* Compute shader dispatch */
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::Write);
+            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
             bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csDensityUpdate, 16, 16, 1);
+            bgfx::dispatch(
+                0, 
+                _csDensityUpdate, 
+                _uParams.bufferWidth / kThreadGroupSizeX, 
+                _uParams.bufferHeight / kThreadGroupSizeY, 
+                1);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);

@@ -193,6 +193,11 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
                 gleqFreeEvent(&_event);
             }
 
+            // should swap the buffer to keep the result we previously did
+            bgfx::DynamicVertexBufferHandle temp = _curDensityField;
+            _curDensityField = _prevDensityField;
+            _prevDensityField = temp;
+
             return true;
         }
 

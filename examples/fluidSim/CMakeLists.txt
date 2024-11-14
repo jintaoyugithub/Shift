@@ -17,6 +17,12 @@ bgfx_compile_shaders(
 # compile all compute shaders
 bgfx_compile_shaders(
 	TYPE COMPUTE
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/init_cs.sc"
+	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
+)
+
+bgfx_compile_shaders(
+	TYPE COMPUTE
 	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_update_cs.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
@@ -32,6 +38,7 @@ add_executable(fluidSim
     # include all the shader files
 	"${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
 	"${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"
+    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/init_cs.sc"
     "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_update_cs.sc"
     "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_update_cs.sc"
 )

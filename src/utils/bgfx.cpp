@@ -68,26 +68,6 @@ namespace shift {
 		spdlog::error("Fail to load {}", _filePath.getCPtr());
 		return nullptr;
 	}
-	
-
-	/// <summary>
-	/// Old way to load mem
-	/// </summary>
-	//static const bgfx::Memory* loadMem(const std::string_view& _fileName) {
-	//	std::ifstream file(static_cast<std::string>(_fileName), std::ios::binary | std::ios::ate);
-	//	std::streamsize size = file.tellg();
-	//	file.seekg(0, std::ios::beg);
-	//	const bgfx::Memory* mem = bgfx::alloc(uint32_t(size + 1));
-	//	if (file.read((char*)mem->data, size))
-	//	{
-	//		mem->data[mem->size - 1] = '\0';
-	//		return mem;
-	//	}
-	//	//spdlog::error("fail to open the file: {}", static_cast<std::string>(_fileName));
-	//	return nullptr;
-	//}
-
-
 
 	/// <summary>
 	/// New way of loading shader
@@ -130,48 +110,6 @@ namespace shift {
 		return loadShader(_fileReader, _shaderNames);
 	}
 
-
-	/// <summary>
-	/// Old way to load shader
-	/// </summary>
-	//static bgfx::ShaderHandle loadShader_t(const std::string_view& _name) {
-	//	std::filesystem::path shaderPath = "shaders";
-
-	//	switch (bgfx::getRendererType())
-	//	{
-	//	case bgfx::RendererType::Noop:
-	//	case bgfx::RendererType::Direct3D11:
-	//	case bgfx::RendererType::Direct3D12: shaderPath /= "dx11";  break;
-	//	case bgfx::RendererType::Agc:
-	//	case bgfx::RendererType::Gnm:        shaderPath /= "pssl";  break;
-	//	case bgfx::RendererType::Metal:      shaderPath /= "metal"; break;
-	//	case bgfx::RendererType::Nvn:        shaderPath /= "nvn";   break;
-	//	case bgfx::RendererType::OpenGL:     shaderPath /= "glsl";  break;
-	//	case bgfx::RendererType::OpenGLES:   shaderPath /= "essl";  break;
-	//	case bgfx::RendererType::Vulkan:     shaderPath /= "spirv"; break;
-
-	//	case bgfx::RendererType::Count:
-	//		BX_ASSERT(false, "You should not be here!");
-	//		break;
-	//	}
-
-	//	char fileName[512];
-	//	bx::strCopy(fileName, BX_COUNTOF(fileName), static_cast<std::string>(_name).c_str());
-	//	bx::strCat(fileName, BX_COUNTOF(fileName), ".bin");
-
-	//	shaderPath /= fileName;
-
-	//	//spdlog::info("Loading shader from: { }", shaderPath.string());
-
-	//	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(shaderPath.string()));
-
-	//	return handle;
-	//}
-
-	//bgfx::ShaderHandle loadShader(const std::string_view& _name) {
-	//	return loadShader_t(_name);
-	//}
-
 	/// <summary>
 	/// New way of loading shader program
 	/// </summary>
@@ -196,32 +134,6 @@ namespace shift {
 	bgfx::ProgramHandle loadProgram(std::initializer_list<bx::StringView> _shaderNames) {
 		return loadProgram(_fileReader, _shaderNames);
 	}
-
-	/// <summary>
-	/// old way to load bgfx shader program
-	/// </summary>
-	/*static bgfx::ProgramHandle loadProgram_t(std::initializer_list<std::string_view> _shaderNames) {
-		if (_shaderNames.size() < 0 || _shaderNames.size() > 2) {
-			spdlog::error("Invalid number of shaders");
-			return BGFX_INVALID_HANDLE;
-		}
-
-		auto itr = _shaderNames.begin();
-		if (_shaderNames.size() == 1) {
-			spdlog::info("Creating compute shader");
-			bgfx::ShaderHandle csShader = loadShader(*itr);
-			return bgfx::createProgram(csShader, true);
-		}
-
-		spdlog::info("Creating vertex and fragment shader");
-		bgfx::ShaderHandle vsShader = loadShader(*itr);
-		bgfx::ShaderHandle fsShader = loadShader(*(++itr));
-		return bgfx::createProgram(vsShader, fsShader, true);
-	}
-
-	bgfx::ProgramHandle loadProgram(std::initializer_list<std::string_view> _shaderNames) {
-		return loadProgram_t(_shaderNames);
-	}*/
 
 	/// Load native window hanlde type
 	static bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType_t() {

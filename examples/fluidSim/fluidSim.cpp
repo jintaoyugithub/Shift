@@ -1,6 +1,15 @@
 #include <utils/common.hpp>
 #include <appBaseGLFW.hpp>
 
+// size of the area whcih perform the fluid sim
+const uint16_t size = 254;
+
+struct Mouse {
+    double x;
+    double y;
+    bool isPressed = false;
+};
+
 struct quadPosTexCoord {
 	float _x;
 	float _y;
@@ -66,53 +75,75 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
 
 
             /* Init all the buffers that the compute shader will use */
-            bgfx::VertexLayout fluidBufferLayout;
-            fluidBufferLayout
+            // 1. dynamic buffers
+            bgfx::VertexLayout densityLayout;
+            densityLayout
                 .begin()
-                .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
+                .add(bgfx::Attrib::TexCoord0, 1, bgfx::AttribType::Float)
                 .end();
 
             _prevDensityField = bgfx::createDynamicVertexBuffer(
-                getHeight() * getWidth() * 4 * sizeof(float),    // mem size
-                fluidBufferLayout,                                          // vertex fluidBufferLayout
+                // size + 2 because we take boundary in
+                (size+2) * (size+2) * sizeof(float),             // mem size
+                densityLayout,                                   // vertex fluidBufferLayout
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   // buffer access
             );
 
-            _prevVelocityField = bgfx::createDynamicVertexBuffer(
-                getHeight() * getWidth() * 4 * sizeof(float),    
-                fluidBufferLayout,                                          
+            _curDensityField = bgfx::createDynamicVertexBuffer(
+                (size+2) * (size+2) * sizeof(float),         
+                densityLayout,
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
 
-            _curDensityField = bgfx::createDynamicVertexBuffer(
-                getHeight() * getWidth() * 4 * sizeof(float),    
-                fluidBufferLayout,                                          
+            bgfx::VertexLayout velocityLayout;
+            velocityLayout
+                .begin()
+                .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+                .end();
+
+            _prevVelocityField = bgfx::createDynamicVertexBuffer(
+                (size+2) * (size+2) * 2 * sizeof(float),         
+                velocityLayout,                                          
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
 
             _curVelocityField = bgfx::createDynamicVertexBuffer(
-                getHeight() * getWidth() * 4 * sizeof(float),    
-                fluidBufferLayout,                                          
+                (size+2) * (size+2) * 2 * sizeof(float),         
+                velocityLayout,                                          
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
 
+            // 2. uniforms
+            _mousePos = bgfx::createUniform("mousePos", bgfx::UniformType::Vec4, 1);
+
+
             // imporve performance while put them together??
-            _csDensityProgram = shift::loadProgram({"density_update_cs.sc"});
-            _csVelocityProgram = shift::loadProgram({"velocity_update_cs.sc"});
+            _csInit = shift::loadProgram({"init_cs.sc"});
+            _csDensityUpdate = shift::loadProgram({"density_update_cs.sc"});
+            _csVelocityUpdate = shift::loadProgram({"velocity_update_cs.sc"});
+
+            // buffers set up 
+            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
+            bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
+            // dispatch the init compute shader
+            bgfx::dispatch(0, _csInit, 512, 1, 1);
         }
     }
 
     void shutdown() override {
         if(_computeSupported) {
-            bgfx::destroy(_csDensityProgram);
-            bgfx::destroy(_csVelocityProgram);
+            bgfx::destroy(_csInit);
+            bgfx::destroy(_csDensityUpdate);
+            bgfx::destroy(_csVelocityUpdate);
             bgfx::destroy(_quadProgram);
             bgfx::destroy(_vbhQuad);
             bgfx::destroy(_ibhQuad);
             bgfx::destroy(_prevVelocityField);
-            bgfx::destroy(_prevDensityField);
             bgfx::destroy(_curVelocityField);
+            bgfx::destroy(_prevDensityField);
             bgfx::destroy(_curDensityField);
+
+            bgfx::destroy(_mousePos);
         }
     }
 
@@ -121,9 +152,18 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             glfwSwapBuffers(_window);
             glfwPollEvents();
 
+            /* Compute shader dispatch */
+            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setBuffer(1, _curDensityField, bgfx::Access::Write);
+            glm::vec4 mousePos = glm::vec4(_mouse.x, _mouse.y, 0.0, 0.0);
+            bgfx::setUniform(_mousePos, &mousePos, 1);
+            bgfx::dispatch(0, _csDensityUpdate, 16, 1, 1);
+
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
+            //bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setBuffer(0, _curDensityField, bgfx::Access::Read);
             // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
             bgfx::submit(0, _quadProgram);
@@ -135,18 +175,18 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
                 switch(_event.type) {
                     case GLEQ_BUTTON_PRESSED:
                         std::cout << "left button pressed" << std::endl;
-                        pressed = true;
+                        _mouse.isPressed = true;
                         break;
                     case GLEQ_CURSOR_MOVED:
-                        if(pressed) {
-                            double xPos, yPos;
-                            glfwGetCursorPos(_window, &xPos, &yPos);
-                            std::cout << xPos << " " << yPos << std::endl;
+                        if(_mouse.isPressed) {
+                            // set up uniforms
+                            glfwGetCursorPos(_window, &_mouse.x, &_mouse.y);
+                            std::cout << _mouse.x << " " << _mouse.y << std::endl;
                         }
                         break;
                     case GLEQ_BUTTON_RELEASED:
                         std::cout << "left button released" << std::endl;
-                        pressed = false;
+                        _mouse.isPressed = false;
                         break;
                 }
 
@@ -172,13 +212,15 @@ private:
     bool _indirectSupported;
 
     GLEQevent _event;
-    bool pressed = false;
+    Mouse _mouse;
 
-    bgfx::ProgramHandle _csDensityProgram;
-    bgfx::ProgramHandle _csVelocityProgram;
+    bgfx::ProgramHandle _csInit;
+    bgfx::ProgramHandle _csDensityUpdate;
+    bgfx::ProgramHandle _csVelocityUpdate;
     bgfx::ProgramHandle _quadProgram;
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
+    bgfx::UniformHandle _mousePos;
     bgfx::DynamicVertexBufferHandle _prevVelocityField;
     bgfx::DynamicVertexBufferHandle _curVelocityField;
     bgfx::DynamicVertexBufferHandle _prevDensityField;

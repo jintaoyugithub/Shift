@@ -84,13 +84,13 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
 
             _prevDensityField = bgfx::createDynamicVertexBuffer(
                 // size + 2 because we take boundary in
-                (size+2) * (size+2) * sizeof(float),             // mem size
+                getHeight() * getWidth(),                        // mem size, not necessary to include sizeof cause you already specify it in the layout
                 densityLayout,                                   // vertex fluidBufferLayout
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   // buffer access
             );
 
             _curDensityField = bgfx::createDynamicVertexBuffer(
-                (size+2) * (size+2) * sizeof(float),         
+                getHeight() * getWidth(),
                 densityLayout,
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
@@ -102,13 +102,13 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
                 .end();
 
             _prevVelocityField = bgfx::createDynamicVertexBuffer(
-                (size+2) * (size+2) * 2 * sizeof(float),         
+                getHeight() * getWidth(),
                 velocityLayout,                                          
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
 
             _curVelocityField = bgfx::createDynamicVertexBuffer(
-                (size+2) * (size+2) * 2 * sizeof(float),         
+                getHeight() * getWidth(),
                 velocityLayout,                                          
                 BGFX_BUFFER_COMPUTE_READ_WRITE                   
             );
@@ -155,9 +155,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             /* Compute shader dispatch */
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
             bgfx::setBuffer(1, _curDensityField, bgfx::Access::Write);
-            glm::vec4 mousePos = glm::vec4(_mouse.x, _mouse.y, 0.0, 0.0);
+            glm::vec4 mousePos = glm::vec4(_mouse.x, _mouse.y, _mouse.isPressed, 0.0);
             bgfx::setUniform(_mousePos, &mousePos, 1);
-            bgfx::dispatch(0, _csDensityUpdate, 16, 1, 1);
+            bgfx::dispatch(0, _csDensityUpdate, 512, 1, 1);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);

@@ -13,7 +13,7 @@ vec2 randomVec2(float seed) {
     return vec2(x, y);
 }
 
-NUM_THREADS(128, 1, 1)
+NUM_THREADS(512, 1, 1)
 void main() {
     // init the density field and velocity field
     prevDensityField[gl_GlobalInvocationID.x] = 0.1;

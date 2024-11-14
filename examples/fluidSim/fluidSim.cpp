@@ -1,12 +1,6 @@
 #include <utils/common.hpp>
 #include <appBaseGLFW.hpp>
 
-struct Mouse {
-    double x = 0.0;
-    double y = 0.0;
-    bool isPressed = false;
-};
-
 struct quadPosTexCoord {
 	float _x;
 	float _y;
@@ -40,6 +34,35 @@ static const uint16_t quadIndices[] = {
     0, 1, 2,
     2, 3, 0,
 };
+
+struct paramsData {
+    // for mouse input
+    float x;
+    float y;
+    float isPressed;
+    // for buffer info
+    int32_t bufferWidth;
+    int32_t bufferHeight;
+    int32_t bufferResolution;
+    // for equation parameters
+    float deltaTime;
+    float diff;
+    float visc;
+};
+
+void initParamsData(paramsData* _data) {
+    _data->x = 0.0;
+    _data->y = 0.0;
+    _data->isPressed = false;
+    _data->bufferWidth = SHIFT_DEFAULT_WIDTH;
+    _data->bufferHeight = SHIFT_DEFAULT_HEIGHT;
+    _data->bufferResolution = SHIFT_DEFAULT_WIDTH * SHIFT_DEFAULT_HEIGHT;
+    _data->deltaTime = 0.0f;
+    _data->diff = 0.0f;
+    _data->visc = 0.0f;
+}
+
+float lastFrame = 0.0f;
 
 class ExampleFluidSim : public shift::AppBaseGLFW {
     void init(int _argc, const char** _argv, uint32_t width, uint32_t height) override {
@@ -111,7 +134,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             );
 
             // 2. uniforms
-            _mousePos = bgfx::createUniform("mousePos", bgfx::UniformType::Vec4, 1);
+            _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, 3);
+            initParamsData(&_uParams);
 
 
             // imporve performance while put them together??
@@ -122,6 +146,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             // buffers set up 
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
             bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
             // dispatch the init compute shader
             bgfx::dispatch(0, _csInit, 16, 16, 1);
         }
@@ -139,8 +164,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             bgfx::destroy(_curVelocityField);
             bgfx::destroy(_prevDensityField);
             bgfx::destroy(_curDensityField);
-
-            bgfx::destroy(_mousePos);
+            bgfx::destroy(_uhParams);
         }
     }
 
@@ -149,17 +173,22 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
             glfwSwapBuffers(_window);
             glfwPollEvents();
 
+            /* Update uniforms */
+            float curFrame = glfwGetTime();
+            _uParams.deltaTime = curFrame - lastFrame;
+            lastFrame = curFrame;
+            //std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+
             /* Compute shader dispatch */
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
             bgfx::setBuffer(1, _curDensityField, bgfx::Access::Write);
-            glm::vec4 mousePos = glm::vec4(_mouse.x, _mouse.y, _mouse.isPressed, 0.0);
-            bgfx::setUniform(_mousePos, &mousePos, 1);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
             bgfx::dispatch(0, _csDensityUpdate, 16, 16, 1);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
-            //bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
             bgfx::setBuffer(0, _curDensityField, bgfx::Access::Read);
             // chech https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
@@ -172,18 +201,20 @@ class ExampleFluidSim : public shift::AppBaseGLFW {
                 switch(_event.type) {
                     case GLEQ_BUTTON_PRESSED:
                         std::cout << "left button pressed" << std::endl;
-                        _mouse.isPressed = true;
+                        _uParams.isPressed = true;
                         break;
                     case GLEQ_CURSOR_MOVED:
-                        if(_mouse.isPressed) {
+                        if(_uParams.isPressed) {
                             // set up uniforms
-                            glfwGetCursorPos(_window, &_mouse.x, &_mouse.y);
-                            //std::cout << _mouse.x << " " << _mouse.y << std::endl;
+                            double x, y;
+                            glfwGetCursorPos(_window, &x, &y);
+                            _uParams.x = x;
+                            _uParams.y = y;
                         }
                         break;
                     case GLEQ_BUTTON_RELEASED:
                         std::cout << "left button released" << std::endl;
-                        _mouse.isPressed = false;
+                        _uParams.isPressed = false;
                         break;
                 }
 
@@ -214,7 +245,7 @@ private:
     bool _indirectSupported;
 
     GLEQevent _event;
-    Mouse _mouse;
+    paramsData _uParams;
 
     bgfx::ProgramHandle _csInit;
     bgfx::ProgramHandle _csDensityUpdate;
@@ -222,7 +253,7 @@ private:
     bgfx::ProgramHandle _quadProgram;
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
-    bgfx::UniformHandle _mousePos;
+    bgfx::UniformHandle _uhParams;
     bgfx::DynamicVertexBufferHandle _prevVelocityField;
     bgfx::DynamicVertexBufferHandle _curVelocityField;
     bgfx::DynamicVertexBufferHandle _prevDensityField;

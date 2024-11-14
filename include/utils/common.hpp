@@ -17,7 +17,12 @@
 #define GLEQ_STATIC
 #include <gleq.hpp>
 
-#define SHIFT_DEFAULT_WIDTH 256
-#define SHIFT_DEFAULT_HEIGHT 256
+const uint32_t SHIFT_DEFAULT_WIDTH  = 256;
+const uint32_t SHIFT_DEFAULT_HEIGHT = 256;
+
+
+
+
+
 
 

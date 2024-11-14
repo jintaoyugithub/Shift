@@ -1,30 +1,35 @@
 #include "../../utils/bgfx_compute.sh"
-#include "../../utils/fluidSim_utils.sh"
+#include "fluidSim_utils.sh"
 
 BUFFER_RO(prevDensityField, float, 0);
 BUFFER_WO(curDensityField, float, 1);
 
-uniform vec4 mousePos;
-float _radius = 10.0;
+float _radius = 5.0;
 
-// Declaration
-void addSource();
+/**
+* @ Summary
+* @ Parameter
+* @ Parameter
+*/
+void addSource(uint index, float dt);
 
-// Implementation
-void addSource() {
-}
+void diffuse(uint index, float diff, float dt);
+
+void advect(uint index, float dt);
 
 NUM_THREADS(16, 16, 1)
 void main() {
-    uint index = gl_GlobalInvocationID.x + bufferHeight * gl_GlobalInvocationID.y;
-
+    uint index = gl_GlobalInvocationID.x + uBufferHeight * gl_GlobalInvocationID.y;
     // The origin of gl_FragCoord is bottom left, however the origin of glfwGetCursorPos() is top left
-    float dis = distance(vec2(float(gl_GlobalInvocationID.x), float(gl_GlobalInvocationID.y)), vec2(mousePos.x, bufferHeight - mousePos.y));
+    float dis = distance(vec2(float(gl_GlobalInvocationID.x), float(gl_GlobalInvocationID.y)), vec2(uMousePosX, uBufferHeight - uMousePosY));
 
     if (dis < _radius) {
-        curDensityField[index] = 0.5;
-        //addSource();
+        addSource(index, uDeltaTime);
     } else {
         curDensityField[index] = prevDensityField[index];
     }
+}
+
+void addSource(uint index, float dt) {
+    curDensityField[index] = prevDensityField[index] * 100 * dt;
 }

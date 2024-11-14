@@ -16,4 +16,23 @@
 
 In the file `bgfxToolUtils.cmake`, comment the line `list(APPEND PROFILES s_4_0)` inside the `function(bgfx_compile_shader)`, then the system will take shader model 5 as default!
 
-5. Connection between gl_GlobalInvocationID and gl_FragCoord?
+5. Connection between mouse position and gl_FragCoord?
+
+The origin of gl_FragCoord is bottom left, however the origin of glfwGetCursorPos() is top left
+
+6. uniforms structure
+
+If you want to send a struct uniform, for example:
+
+```cpp
+struct uParams {
+    float mousePosX;
+    float mousePosY;
+    int32_t bufferWidth;
+    //...
+}
+```
+
+Make sure you are using `float` or `int32_t` which means each variable should occupy the same amount of memory. `double` is not allowed, same as `int16_t`, `bool` etc.
+
+**Note**: why float? Cause bgfx force you to use float as the standard variable type of a uniform.

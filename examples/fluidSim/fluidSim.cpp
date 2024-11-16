@@ -1,3 +1,4 @@
+#include "bgfx/bgfx.h"
 #include <appBaseGLFW.hpp>
 #include <utils/common.hpp>
 
@@ -53,15 +54,22 @@ struct paramsData
 
 void initParamsData(paramsData *_data)
 {
-    _data->x = 0.0;
-    _data->y = 0.0;
+    _data->x = -1.0; // avoid the origin problem of the addSource compute shader
+    _data->y = -1.0;
     _data->isPressed = false;
     _data->bufferWidth = SHIFT_DEFAULT_WIDTH;
     _data->bufferHeight = SHIFT_DEFAULT_HEIGHT;
     _data->bufferResolution = SHIFT_DEFAULT_WIDTH * SHIFT_DEFAULT_HEIGHT;
     _data->deltaTime = 0.0f;
-    _data->diff = 1.0e-5;
+    _data->diff = 1.0e-6;
     _data->visc = 0.0f;
+}
+
+void swap(bgfx::DynamicVertexBufferHandle &prev, bgfx::DynamicVertexBufferHandle &cur)
+{
+    bgfx::DynamicVertexBufferHandle temp = cur;
+    prev = cur;
+    cur = temp;
 }
 
 float lastFrame = 0.0f;
@@ -112,12 +120,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _curDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
                                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
 
-            _nextDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
-                                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
-
-            _afterNextDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
-                                                                     BGFX_BUFFER_COMPUTE_READ_WRITE);
-
             bgfx::VertexLayout velocityLayout;
             velocityLayout.begin().add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float).end();
 
@@ -133,15 +135,17 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             // imporve performance while put them together??
             _csInit = shift::loadProgram({"init_cs.sc"});
-            _csDensityUpdate = shift::loadProgram({"density_update_cs.sc"});
+
+            _csDensityAddSource = shift::loadProgram({"density_addSource_cs.sc"});
+            _csDensityDiffuse = shift::loadProgram({"density_diffuse_cs.sc"});
+            _csDensityAdvect = shift::loadProgram({"density_advect_cs.sc"});
+
             _csVelocityUpdate = shift::loadProgram({"velocity_update_cs.sc"});
 
             // buffers set up
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
-            bgfx::setBuffer(1, _nextDensityField, bgfx::Access::Write);
-            bgfx::setBuffer(2, _afterNextDensityField, bgfx::Access::Write);
-            bgfx::setBuffer(3, _prevVelocityField, bgfx::Access::Write);
-            bgfx::setBuffer(4, _curVelocityField, bgfx::Access::Write);
+            bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
+            bgfx::setBuffer(2, _curVelocityField, bgfx::Access::Write);
             bgfx::setUniform(_uhParams, &_uParams, 3);
             // dispatch the init compute shader
             bgfx::dispatch(0, _csInit, _uParams.bufferWidth / kThreadGroupSizeX,
@@ -154,7 +158,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW
         if (_computeSupported)
         {
             bgfx::destroy(_csInit);
-            bgfx::destroy(_csDensityUpdate);
+            bgfx::destroy(_csDensityAddSource);
+            bgfx::destroy(_csDensityDiffuse);
+            bgfx::destroy(_csDensityAdvect);
             bgfx::destroy(_csVelocityUpdate);
             bgfx::destroy(_quadProgram);
             bgfx::destroy(_vbhQuad);
@@ -163,8 +169,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::destroy(_curVelocityField);
             bgfx::destroy(_prevDensityField);
             bgfx::destroy(_curDensityField);
-            bgfx::destroy(_nextDensityField);
-            bgfx::destroy(_afterNextDensityField);
             bgfx::destroy(_uhParams);
         }
     }
@@ -183,13 +187,33 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
             /* Compute shader dispatch */
+            // dispatch add source compute shader
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
             bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _nextDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(3, _afterNextDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(4, _curVelocityField, bgfx::Access::Read);
             bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csDensityUpdate, _uParams.bufferWidth / kThreadGroupSizeX,
+            bgfx::dispatch(0, _csDensityAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
+                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+
+            // dont forget to swap the buffer
+            // std::swap(_prevDensityField, _curDensityField);
+            swap(_prevDensityField, _curDensityField);
+
+            // dispatch diffuse compute shader
+            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
+            bgfx::dispatch(0, _csDensityDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
+                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+
+            // std::swap(_prevDensityField, _curDensityField);
+            swap(_prevDensityField, _curDensityField);
+
+            // dispatch advect compute shader
+            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+            bgfx::setBuffer(2, _curVelocityField, bgfx::Access::Read);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
+            bgfx::dispatch(0, _csDensityAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
                            _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
             /* Quad rendering */
@@ -233,14 +257,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             }
 
             // should swap the buffer to keep the result we previously did
-            bgfx::DynamicVertexBufferHandle temp = _curDensityField;
-            _curDensityField = _prevDensityField;
-            _prevDensityField = temp;
+            // bgfx::DynamicVertexBufferHandle temp = _curDensityField;
+            //_curDensityField = _prevDensityField;
+            //_prevDensityField = temp;
 
             // swap velocity field buffer
-            temp = _curVelocityField;
-            _curVelocityField = _prevVelocityField;
-            _prevVelocityField = temp;
+            // temp = _curVelocityField;
+            //_curVelocityField = _prevVelocityField;
+            //_prevVelocityField = temp;
 
             return true;
         }
@@ -271,8 +295,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     paramsData _uParams;
 
     bgfx::ProgramHandle _csInit;
-    bgfx::ProgramHandle _csDensityUpdate;
+
+    // compute shader used for density calculation
+    bgfx::ProgramHandle _csDensityAddSource;
+    bgfx::ProgramHandle _csDensityDiffuse;
+    bgfx::ProgramHandle _csDensityAdvect;
+
     bgfx::ProgramHandle _csVelocityUpdate;
+
     bgfx::ProgramHandle _quadProgram;
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
@@ -283,10 +313,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;
-    // in order to reduce dispatch number of compute shder
-    // cause by the swapping buffer
-    bgfx::DynamicVertexBufferHandle _nextDensityField;
-    bgfx::DynamicVertexBufferHandle _afterNextDensityField;
 };
 
 int main(int _argc, const char **_argv)

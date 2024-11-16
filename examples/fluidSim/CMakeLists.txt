@@ -23,13 +23,25 @@ bgfx_compile_shaders(
 
 bgfx_compile_shaders(
 	TYPE COMPUTE
-	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_update_cs.sc"
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_addSource_cs.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 
 bgfx_compile_shaders(
 	TYPE COMPUTE
-	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_update_cs.sc"
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_diffuse_cs.sc"
+	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
+)
+
+bgfx_compile_shaders(
+	TYPE COMPUTE
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_advect_cs.sc"
+	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
+)
+
+bgfx_compile_shaders(
+	TYPE COMPUTE
+	SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_addSource_cs.sc"
 	OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 
@@ -39,8 +51,10 @@ add_executable(fluidSim
 	"${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
 	"${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"
     "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/init_cs.sc"
-    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_update_cs.sc"
-    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_update_cs.sc"
+    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_addSource_cs.sc"
+    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_diffuse_cs.sc"
+    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/density_advect_cs.sc"
+    "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_addSource_cs.sc"
 )
 
 target_include_directories(

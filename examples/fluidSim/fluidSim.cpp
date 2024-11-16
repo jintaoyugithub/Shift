@@ -112,6 +112,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _curDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
                                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
 
+            _nextDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
+                                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
+
+            _afterNextDensityField = bgfx::createDynamicVertexBuffer(getHeight() * getWidth(), densityLayout,
+                                                                     BGFX_BUFFER_COMPUTE_READ_WRITE);
+
             bgfx::VertexLayout velocityLayout;
             velocityLayout.begin().add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float).end();
 
@@ -132,15 +138,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             // buffers set up
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
-            bgfx::setBuffer(1, _prevVelocityField, bgfx::Access::Write);
-            bgfx::setBuffer(2, _curVelocityField, bgfx::Access::Write);
+            bgfx::setBuffer(1, _nextDensityField, bgfx::Access::Write);
+            bgfx::setBuffer(2, _afterNextDensityField, bgfx::Access::Write);
+            bgfx::setBuffer(3, _prevVelocityField, bgfx::Access::Write);
+            bgfx::setBuffer(4, _curVelocityField, bgfx::Access::Write);
             bgfx::setUniform(_uhParams, &_uParams, 3);
             // dispatch the init compute shader
-            bgfx::dispatch(0,
-                          _csInit, 
-                          _uParams.bufferWidth / kThreadGroupSizeX,
-                          _uParams.bufferHeight / kThreadGroupSizeY, 
-                          1);
+            bgfx::dispatch(0, _csInit, _uParams.bufferWidth / kThreadGroupSizeX,
+                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
         }
     }
 
@@ -158,6 +163,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::destroy(_curVelocityField);
             bgfx::destroy(_prevDensityField);
             bgfx::destroy(_curDensityField);
+            bgfx::destroy(_nextDensityField);
+            bgfx::destroy(_afterNextDensityField);
             bgfx::destroy(_uhParams);
         }
     }
@@ -178,13 +185,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             /* Compute shader dispatch */
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
             bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _curVelocityField, bgfx::Access::Read);
+            bgfx::setBuffer(2, _nextDensityField, bgfx::Access::ReadWrite);
+            bgfx::setBuffer(3, _afterNextDensityField, bgfx::Access::ReadWrite);
+            bgfx::setBuffer(4, _curVelocityField, bgfx::Access::Read);
             bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0,
-                           _csDensityUpdate, 
-                           _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 
-                           1);
+            bgfx::dispatch(0, _csDensityUpdate, _uParams.bufferWidth / kThreadGroupSizeX,
+                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
@@ -192,8 +198,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::setUniform(_uhParams, &_uParams, 3);
             bgfx::setBuffer(0, _curDensityField, bgfx::Access::Read);
             bgfx::setBuffer(1, _curVelocityField, bgfx::Access::Read);
-            // chech
-            // https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
+            // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
             bgfx::submit(0, _quadProgram);
 
@@ -272,10 +277,16 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
     bgfx::UniformHandle _uhParams;
+
     bgfx::DynamicVertexBufferHandle _prevVelocityField;
     bgfx::DynamicVertexBufferHandle _curVelocityField;
+
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;
+    // in order to reduce dispatch number of compute shder
+    // cause by the swapping buffer
+    bgfx::DynamicVertexBufferHandle _nextDensityField;
+    bgfx::DynamicVertexBufferHandle _afterNextDensityField;
 };
 
 int main(int _argc, const char **_argv)

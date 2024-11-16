@@ -3,9 +3,11 @@
 
 BUFFER_RO(prevDensityField, float, 0);
 BUFFER_RW(curDensityField, float, 1);
-BUFFER_RO(curVelocityField, vec2, 2);
+BUFFER_RW(nextDensityField, float, 2);
+BUFFER_WO(afterNextDensityField, float, 3);
+BUFFER_RO(curVelocityField, vec2, 4);
 
-float _radius = 20.0;
+float _radius = 10.0;
 
 /**
 * @ Summary
@@ -51,7 +53,7 @@ void main() {
 }
 
 void addSource(uint index, float dt) {
-    curDensityField[index] += prevDensityField[index] * dt;
+    curDensityField[index] += 0.002 + prevDensityField[index] * dt;
 }
 
 void diffuse(uint x, uint y, float diff, float dt) {
@@ -65,20 +67,21 @@ void diffuse(uint x, uint y, float diff, float dt) {
 
     int itr = 20;
     for(int i=0; i<itr; i++) {
-        curDensityField[curIndex] = 
-            prevDensityField[curIndex] +
+        nextDensityField[curIndex] = 
+            curDensityField[curIndex] +
             diffRate *
-            (curDensityField[prevXIndex] +
-             curDensityField[nextXIndex] +
-             curDensityField[prevYIndex] +
-             curDensityField[nextYIndex]) /
+            (nextDensityField[prevXIndex] +
+             nextDensityField[nextXIndex] +
+             nextDensityField[prevYIndex] +
+             nextDensityField[nextYIndex]) /
             (1 + 4 * diffRate);
     }
 }
 
 void advect(uint x, uint y, uint index, float dt) {
-    float xElapsed = x - dt * uBufferWidth * curVelocityField[index].x;
-    float yElapsed = y - dt * uBufferHeight * curVelocityField[index].y;
+    // previous position when passed time dt
+    float xElapsed = float(x) - dt * float(uBufferWidth) * curVelocityField[index].x;
+    float yElapsed = float(y) - dt * float(uBufferHeight) * curVelocityField[index].y;
 
     int i0 = int(xElapsed);
     int j0 = int(yElapsed);
@@ -95,11 +98,11 @@ void advect(uint x, uint y, uint index, float dt) {
     float t1 = yElapsed - j0;
     float t0 = 1 - t1;
 
-    curDensityField[index] = 
-                s0 * (t0 * prevDensityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
-                      t1 * prevDensityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
-                s1 * (t0 * prevDensityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
-                      t1 * prevDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]);
+    afterNextDensityField[index] = 
+                s0 * (t0 * nextDensityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
+                      t1 * nextDensityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
+                s1 * (t0 * nextDensityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
+                      t1 * nextDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]);
 }
 
 uint calIndex(uint x, uint y, uint width) {

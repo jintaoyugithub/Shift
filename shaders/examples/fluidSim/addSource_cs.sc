@@ -18,20 +18,17 @@ void main() {
         // add density
         addSource(index, uDeltaTime, bool(uState));
     } else {
-        //curDensityField[index] = prevDensityField[index];
-        //curVelocityField[index] = prevVelocityField[index];
+        curDensityField[index] = prevDensityField[index];
+        curVelocityField[index] = prevVelocityField[index];
     }
 }
 
 void addSource(uint index, float dt, bool state) {
-    if(state) {
         vec2 velocityDir = vec2(uMouseXAcce, uMouseYAcce);
         // bug: can not use normalize here
         //curVelocityField[index] += normalize(velocityDir) + prevVelocityField[index] * dt;
         curVelocityField[index] += velocityDir + prevVelocityField[index] * dt;
-    } else {
-        curDensityField[index] += 0.002 + prevDensityField[index] * dt;
-    }
+        curDensityField[index] += 0.2 + prevDensityField[index] * dt;
 }
 
 

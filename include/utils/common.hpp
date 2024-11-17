@@ -1,9 +1,9 @@
 #pragma once
 
 #include <bgfx/bgfx.h>
+#include <bx/math.h>
 #include <utils/bgfx.hpp>
 #include <utils/glfw.hpp>
-#include <bx/math.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,12 +17,5 @@
 #define GLEQ_STATIC
 #include <gleq.hpp>
 
-const uint32_t SHIFT_DEFAULT_WIDTH  = 512;
-const uint32_t SHIFT_DEFAULT_HEIGHT = 512;
-
-
-
-
-
-
-
+const float SHIFT_DEFAULT_WIDTH = 512.0f;
+const float SHIFT_DEFAULT_HEIGHT = 512.0f;

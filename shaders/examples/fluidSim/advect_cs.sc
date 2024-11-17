@@ -3,7 +3,8 @@
 
 BUFFER_RO(prevDensityField, float, 0);
 BUFFER_RW(curDensityField, float, 1);
-BUFFER_RO(curVelocityField, vec2, 2);
+BUFFER_RO(prevVelocityField, vec2, 2);
+BUFFER_RW(curVelocityField, vec2, 3);
 
 NUM_THREADS(32, 32, 1)
 void main() {
@@ -13,8 +14,8 @@ void main() {
 
 void advect(uint x, uint y, uint index, float dt) {
     // previous position when passed time dt
-    float xElapsed = float(x) - dt * float(uBufferWidth) * curVelocityField[index].x;
-    float yElapsed = float(y) - dt * float(uBufferHeight) * curVelocityField[index].y;
+    float xElapsed = float(x) - dt * uBufferWidth * curVelocityField[index].x;
+    float yElapsed = float(y) - dt * uBufferHeight * curVelocityField[index].y;
 
     int i0 = int(xElapsed);
     int j0 = int(yElapsed);
@@ -32,9 +33,11 @@ void advect(uint x, uint y, uint index, float dt) {
     float t0 = 1 - t1;
 
     curDensityField[index] = 
+                //uLifeTime * (
+                (
                 s0 * (t0 * prevDensityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
                       t1 * prevDensityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
                 s1 * (t0 * prevDensityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
-                      t1 * prevDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]);
+                      t1 * prevDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]));
 }
 

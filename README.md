@@ -37,6 +37,25 @@ Make sure you are using `float` or `int32_t` which means each variable should oc
 
 **Note**: why float? Cause bgfx force you to use float as the standard variable type of a uniform.
 
+`Update on 2024.11.17`:
+
+Better only use `float`, especially when you gonna use the full storage of the unifroms, and also the value that you send to the uniform should also be `float`, otherwise it may not be sent to the GPU, for example:
+
+```cpp
+struct data {
+    // NO! int32_t, better all floats
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+void init(data* _data) {
+    _data = 0.0f; // the value here should also be float, no int, uint etc.
+    // ...
+}
+```
+
 7. Framerate issues
 
 I'm not sure why the frame rate in this project changes with the display's maximum refresh rate. For example, with a 60Hz monitor, the frame rate is capped at 60, but when I switch to a 140Hz monitor, it reaches 140. Disabling V-Sync in the NVIDIA control panel under 3D settings unlocks the frame rate limit.

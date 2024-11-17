@@ -1,13 +1,9 @@
 set(LIB_NAME shift_lib)
 
-set(SOURCES 
-    appBase.cpp 
-    appBaseGLFW.cpp
-    "utils/bgfx.cpp"
-    "utils/glfw.cpp"
+set(SOURCES
+    appBase.cpp appBaseGLFW.cpp "utils/bgfx.cpp" "utils/glfw.cpp"
     # "utils/imgui.cpp"
-    "utils/common.cpp"
-)
+    "utils/common.cpp")
 
 add_library(${LIB_NAME} STATIC ${SOURCES})
 
@@ -20,17 +16,14 @@ target_include_directories(
          "${CMAKE_SOURCE_DIR}/ext/bgfx.cmake/bimg/include/"
          "${CMAKE_SOURCE_DIR}/ext/spdlog/include/"
          "${CMAKE_SOURCE_DIR}/ext/imgui/"
-         "${CMAKE_SOURCE_DIR}/ext/gleq/"
-)
+         "${CMAKE_SOURCE_DIR}/ext/gleq/")
 
 target_link_libraries(
   ${LIB_NAME}
-  PUBLIC
-  glm
-  glfw 
-  imgui
-  bgfx 
-  bx 
-  bimg 
-  spdlog
-)
+  PUBLIC glm
+         glfw
+         imgui
+         bgfx
+         bx
+         bimg
+         spdlog)

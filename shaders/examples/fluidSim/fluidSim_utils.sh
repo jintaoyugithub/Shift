@@ -2,20 +2,25 @@ uniform vec4 uParams[3];
 
 #define uMousePosX              uParams[0].x
 #define uMousePosY              uParams[0].y
-#define uMouseIsPressed         uParams[0].z
+#define uMouseXAcce             uParams[0].z
+#define uMouseYAcce             uParams[0].w
 
-#define uBufferWidth            floatBitsToUint(uParams[0].w)
-#define uBufferHeight           floatBitsToUint(uParams[1].x)
-#define uBufferResolution       floatBitsToUint(uParams[1].y)
+#define uMouseIsPressed         uParams[1].x
+//#define uBufferWidth            floatBitsToUint(uParams[1].y)
+#define uBufferWidth            uParams[1].y
+#define uBufferHeight           uParams[1].z
+#define uBufferResolution       uParams[1].w
 
-#define uDeltaTime              uParams[1].z
-#define uDiff                   uParams[1].w
-#define uVisc                   uParams[2].x
+#define uDeltaTime              uParams[2].x
+#define uDiff                   uParams[2].y
+#define uVisc                   uParams[2].z
+#define uLifeTime               uParams[2].w
 
-uint calIndex(uint x, uint y, uint width);
 
-uint calIndex(uint x, uint y, uint width) {
-    return x + width * y;
+uint calIndex(uint x, uint y, float width);
+
+uint calIndex(uint x, uint y, float width) {
+    return x + int(width) * y;
 }
 
 /**

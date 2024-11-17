@@ -3,8 +3,10 @@
 
 BUFFER_RO(prevDensityField, float, 0);
 BUFFER_RW(curDensityField, float, 1);
+BUFFER_RO(prevVelocityField, vec2, 2);
+BUFFER_RW(curVelocityField, vec2, 3);
 
-float _radius = 1.0;
+float _radius = 5.0;
 
 NUM_THREADS(32, 32, 1)
 void main() {
@@ -21,7 +23,7 @@ void main() {
 }
 
 void addSource(uint index, float dt) {
-    curDensityField[index] += 0.005 + prevDensityField[index] * dt;
+    curDensityField[index] += 0.002 + prevDensityField[index] * dt;
 }
 
 

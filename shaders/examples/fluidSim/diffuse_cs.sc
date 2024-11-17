@@ -3,6 +3,8 @@
 
 BUFFER_RO(prevDensityField, float, 0);
 BUFFER_RW(curDensityField, float, 1);
+BUFFER_RO(prevVelocityField, vec2, 2);
+BUFFER_RW(curVelocityField, vec2, 3);
 
 NUM_THREADS(32, 32, 1)
 void main() {
@@ -10,7 +12,7 @@ void main() {
 }
 
 void diffuse(uint x, uint y, float diff, float dt) {
-    float diffRate = diff * dt * uBufferWidth * uBufferHeight;
+    float diffRate = diff * dt * uBufferResolution;
 
     uint curIndex = calIndex(x, y, uBufferWidth);
     uint prevXIndex = calIndex(x-1, y, uBufferWidth);

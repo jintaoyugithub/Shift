@@ -1,5 +1,6 @@
 #include "bgfx/bgfx.h"
 #include <appBaseGLFW.hpp>
+#include <ios>
 #include <utils/common.hpp>
 
 #include <algorithm>
@@ -46,7 +47,8 @@ struct paramsData
     float y;
     float xAcce;
     float yAcce;
-    float isPressed;
+    // true means velocity, false means density
+    float state;
 
     // for buffer info
     // int32_t bufferWidth;
@@ -67,7 +69,7 @@ void initParamsData(paramsData *_data)
     _data->y = -1.0f;
     _data->xAcce = 0.0f;
     _data->yAcce = 0.0f;
-    _data->isPressed = false;
+    _data->state = true;
     _data->bufferWidth = SHIFT_DEFAULT_WIDTH;
     _data->bufferHeight = SHIFT_DEFAULT_HEIGHT;
     _data->bufferResolution = SHIFT_DEFAULT_WIDTH * SHIFT_DEFAULT_HEIGHT;
@@ -85,9 +87,9 @@ void swap(bgfx::DynamicVertexBufferHandle &prev, bgfx::DynamicVertexBufferHandle
 }
 
 float lastFrame = 0.0f;
-bool state = true; // true means density, false means velocity
 double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
+bool isMousePressed = false;
 const int kThreadGroupSizeX = 32;
 const int kThreadGroupSizeY = 32;
 
@@ -202,17 +204,21 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             float curFrame = glfwGetTime();
             _uParams.deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
+
             std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
-            /* Compute shader dispatch */
             // Velocity compute shaders
-            // bgfx::setBuffer(0, _prevVelocityField, bgfx::Access::Read);
-            // bgfx::setBuffer(1, _curVelocityField, bgfx::Access::ReadWrite);
-            // bgfx::setUniform(_uhParams, &_uParams, 3);
-            // bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
-            //                _uParams.bufferHeight / kThreadGroupSizeY, 1);
+            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+            bgfx::setUniform(_uhParams, &_uParams, 3);
+            bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
+                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+            swap(_prevVelocityField, _curVelocityField);
 
-            // swap(_prevVelocityField, _curVelocityField);
+            // set state to false to enable density calculation in the compute shader
+            _uParams.state = false;
 
             // Density compute shaders
             // dispatch add source compute shader
@@ -249,6 +255,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
                            _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
+            _uParams.state = true;
+
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
@@ -268,10 +276,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 {
                 case GLEQ_BUTTON_PRESSED:
                     std::cout << "left button pressed" << std::endl;
-                    _uParams.isPressed = true;
+                    isMousePressed = true;
                     break;
                 case GLEQ_CURSOR_MOVED:
-                    if (_uParams.isPressed)
+                    if (isMousePressed)
                     {
                         // set up uniforms
                         double x, y;
@@ -292,7 +300,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     break;
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
-                    _uParams.isPressed = false;
+                    isMousePressed = false;
                     break;
                 }
 

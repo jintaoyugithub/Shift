@@ -5,7 +5,7 @@ uniform vec4 uParams[3];
 #define uMouseXAcce             uParams[0].z
 #define uMouseYAcce             uParams[0].w
 
-#define uMouseIsPressed         uParams[1].x
+#define uState                  uParams[1].x
 //#define uBufferWidth            floatBitsToUint(uParams[1].y)
 #define uBufferWidth            uParams[1].y
 #define uBufferHeight           uParams[1].z
@@ -28,18 +28,20 @@ uint calIndex(uint x, uint y, float width) {
 * @ Parameter
 * @ Parameter
 */
-void addSource(uint index, float dt);
+void addSource(uint index, float dt, bool state);
 
 /**
 * @ Summary
 * @ Parameter
 * @ Parameter
 */
-void diffuse(uint x, uint y, float diff, float dt);
+void diffuse(uint x, uint y, float diff, float dt, bool state);
 
 /**
 * @ Summary
 * @ Parameter
 * @ Parameter
 */
-void advect(uint x, uint y, uint index, float dt);
+void advect(uint x, uint y, uint index, float dt, bool state);
+
+void project();

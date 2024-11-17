@@ -12,6 +12,6 @@ void main() {
     uint index = calIndex(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, uBufferWidth);
     prevDensityField[index] = 0.0;
     prevVelocityField[index] = vec2(0.0, 0.0);
-    curVelocityField[index] = vec2(0.0, 0.3);
+    curVelocityField[index] = vec2(0.0, 0.0);
 }
 

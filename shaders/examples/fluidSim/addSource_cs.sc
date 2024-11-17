@@ -16,14 +16,19 @@ void main() {
 
     if (dis < _radius) {
         // add density
-        addSource(index, uDeltaTime);
+        addSource(index, uDeltaTime, bool(uState));
     } else {
         curDensityField[index] = prevDensityField[index];
     }
 }
 
-void addSource(uint index, float dt) {
-    curDensityField[index] += 0.002 + prevDensityField[index] * dt;
+void addSource(uint index, float dt, bool state) {
+    if(state) {
+        vec2 velocityDir = vec2(uMouseXAcce, uMouseYAcce);
+        curVelocityField[index] += normalize(velocityDir) + prevVelocityField[index] * dt;
+    } else {
+        curDensityField[index] += 0.002 + prevDensityField[index] * dt;
+    }
 }
 
 

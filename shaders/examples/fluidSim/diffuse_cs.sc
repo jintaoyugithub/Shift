@@ -8,11 +8,10 @@ BUFFER_RW(curVelocityField, vec2, 3);
 
 NUM_THREADS(32, 32, 1)
 void main() {
-    diffuse(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, uDiff, uDeltaTime);
+    diffuse(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, uDeltaTime, bool(uState));
 }
 
-void diffuse(uint x, uint y, float diff, float dt) {
-    float diffRate = diff * dt * uBufferResolution;
+void diffuse(uint x, uint y, float dt, bool state) {
 
     uint curIndex = calIndex(x, y, uBufferWidth);
     uint prevXIndex = calIndex(x-1, y, uBufferWidth);
@@ -21,14 +20,32 @@ void diffuse(uint x, uint y, float diff, float dt) {
     uint nextYIndex = calIndex(x, y+1, uBufferWidth);
 
     int itr = 20;
-    for(int i=0; i<itr; i++) {
-        curDensityField[curIndex] = 
-            prevDensityField[curIndex] +
-            diffRate *
-            (curDensityField[prevXIndex] +
-             curDensityField[nextXIndex] +
-             curDensityField[prevYIndex] +
-             curDensityField[nextYIndex]) /
-            (1 + 4 * diffRate);
+
+    if(state) {
+        float viscRate = uVisc * dt * uBufferResolution;
+
+        for(int i=0; i<itr; i++) {
+            curVelocityField[curIndex] = 
+                prevVelocityField[curIndex] +
+                viscRate *
+                (curVelocityField[prevXIndex] +
+                 curVelocityField[nextXIndex] +
+                 curVelocityField[prevYIndex] +
+                 curVelocityField[nextYIndex]) /
+                (1 + 4 * viscRate);
+        }
+    } else {
+        float diffRate = uDiff * dt * uBufferResolution;
+
+        for(int i=0; i<itr; i++) {
+            curDensityField[curIndex] = 
+                prevDensityField[curIndex] +
+                diffRate *
+                (curDensityField[prevXIndex] +
+                 curDensityField[nextXIndex] +
+                 curDensityField[prevYIndex] +
+                 curDensityField[nextYIndex]) /
+                (1 + 4 * diffRate);
+        }
     }
 }

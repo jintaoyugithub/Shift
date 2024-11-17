@@ -35,7 +35,7 @@ void addSource(uint index, float dt, bool state);
 * @ Parameter
 * @ Parameter
 */
-void diffuse(uint x, uint y, float diff, float dt, bool state);
+void diffuse(uint x, uint y, float dt, bool state);
 
 /**
 * @ Summary

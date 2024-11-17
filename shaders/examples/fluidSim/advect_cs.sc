@@ -9,10 +9,10 @@ BUFFER_RW(curVelocityField, vec2, 3);
 NUM_THREADS(32, 32, 1)
 void main() {
     uint index = calIndex(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, uBufferWidth);
-    advect(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, index, uDeltaTime);
+    advect(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, index, uDeltaTime, bool(uState));
 }
 
-void advect(uint x, uint y, uint index, float dt) {
+void advect(uint x, uint y, uint index, float dt, bool state) {
     // previous position when passed time dt
     float xElapsed = float(x) - dt * uBufferWidth * curVelocityField[index].x;
     float yElapsed = float(y) - dt * uBufferHeight * curVelocityField[index].y;
@@ -32,12 +32,23 @@ void advect(uint x, uint y, uint index, float dt) {
     float t1 = yElapsed - j0;
     float t0 = 1 - t1;
 
-    curDensityField[index] = 
-                //uLifeTime * (
-                (
-                s0 * (t0 * prevDensityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
-                      t1 * prevDensityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
-                s1 * (t0 * prevDensityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
-                      t1 * prevDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]));
+    if(state) {
+        curVelocityField[index] = 
+                    //uLifeTime * (
+                    (
+                    s0 * (t0 * prevVelocityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
+                          t1 * prevVelocityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
+                    s1 * (t0 * prevVelocityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
+                          t1 * prevVelocityField[calIndex(uint(i1), uint(j1), uBufferWidth)]));
+    } else {
+        curDensityField[index] = 
+                    //uLifeTime * (
+                    (
+                    s0 * (t0 * prevDensityField[calIndex(uint(i0), uint(j0), uBufferWidth)] +
+                          t1 * prevDensityField[calIndex(uint(i0), uint(j1), uBufferWidth)]) +
+                    s1 * (t0 * prevDensityField[calIndex(uint(i1), uint(j0), uBufferWidth)] +
+                          t1 * prevDensityField[calIndex(uint(i1), uint(j1), uBufferWidth)]));
+    }
+
 }
 

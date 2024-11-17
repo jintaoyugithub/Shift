@@ -62,13 +62,13 @@ struct paramsData
     float deltaTime;
     float diff;
     float visc;
-    float liftTime;
+    float isMousePressed;
 };
 
 void initParamsData(paramsData *_data)
 {
-    _data->x = -1.0f; // avoid the origin problem of the addSource compute shader
-    _data->y = -1.0f;
+    _data->x = 3.40e+38; // avoid the origin problem of the addSource compute shader
+    _data->y = 3.40e+38;
     _data->xAcce = 0.0f;
     _data->yAcce = 0.0f;
     _data->state = true;
@@ -78,7 +78,7 @@ void initParamsData(paramsData *_data)
     _data->deltaTime = 0.0f;
     _data->diff = 1.0e-7;
     _data->visc = 1.5f * 1.0e-7;
-    _data->liftTime = 10.0f;
+    _data->isMousePressed = false;
 }
 
 void swap(bgfx::DynamicVertexBufferHandle &prev, bgfx::DynamicVertexBufferHandle &cur)
@@ -91,7 +91,6 @@ void swap(bgfx::DynamicVertexBufferHandle &prev, bgfx::DynamicVertexBufferHandle
 float lastFrame = 0.0f;
 double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
-bool isMousePressed = false;
 const int kThreadGroupSizeX = 32;
 const int kThreadGroupSizeY = 32;
 
@@ -207,7 +206,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _uParams.deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
 
-            // std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
             // Velocity compute shaders
             // add velocity
@@ -307,10 +306,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 {
                 case GLEQ_BUTTON_PRESSED:
                     std::cout << "left button pressed" << std::endl;
-                    isMousePressed = true;
+                    _uParams.isMousePressed = true;
                     break;
                 case GLEQ_CURSOR_MOVED:
-                    if (isMousePressed)
+                    if (_uParams.isMousePressed)
                     {
                         // set up uniforms
                         double x, y;
@@ -338,7 +337,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     break;
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
-                    isMousePressed = false;
+                    _uParams.isMousePressed = false;
                     break;
                 }
 

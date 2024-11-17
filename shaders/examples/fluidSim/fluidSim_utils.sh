@@ -14,7 +14,7 @@ uniform vec4 uParams[3];
 #define uDeltaTime              uParams[2].x
 #define uDiff                   uParams[2].y
 #define uVisc                   uParams[2].z
-#define uLifeTime               uParams[2].w
+#define uIsMousePressed         uParams[2].w
 
 
 uint calIndex(uint x, uint y, float width);

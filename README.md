@@ -60,3 +60,6 @@ void init(data* _data) {
 
 I'm not sure why the frame rate in this project changes with the display's maximum refresh rate. For example, with a 60Hz monitor, the frame rate is capped at 60, but when I switch to a 140Hz monitor, it reaches 140. Disabling V-Sync in the NVIDIA control panel under 3D settings unlocks the frame rate limit.
 
+8. `.sh` file doesn't update after modified it
+
+You should update the shader, for example, add some comments, in order to make the `bgfx` rebuild the shader.

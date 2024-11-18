@@ -56,7 +56,7 @@ add_executable(
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/addSource_cs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/diffuse_cs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/advect_cs.sc"
-  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_addSource_cs.sc")
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_project_cs.sc")
 
 target_include_directories(
   fluidSim

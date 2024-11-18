@@ -1,3 +1,4 @@
+
 uniform vec4 uParams[3];
 
 #define uMousePosX              uParams[0].x
@@ -16,32 +17,18 @@ uniform vec4 uParams[3];
 #define uVisc                   uParams[2].z
 #define uIsMousePressed         uParams[2].w
 
-
 uint calIndex(uint x, uint y, float width);
 
 uint calIndex(uint x, uint y, float width) {
     return x + int(width) * y;
 }
 
-/**
-* @ Summary
-* @ Parameter
-* @ Parameter
-*/
+
 void addSource(uint index, float dt, bool state);
 
-/**
-* @ Summary
-* @ Parameter
-* @ Parameter
-*/
 void diffuse(uint x, uint y, float dt, bool state);
 
-/**
-* @ Summary
-* @ Parameter
-* @ Parameter
-*/
 void advect(uint x, uint y, uint index, float dt, bool state);
 
-void project();
+void project(uint x, uint y);
+

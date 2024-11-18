@@ -67,8 +67,10 @@ struct paramsData
 
 void initParamsData(paramsData *_data)
 {
-    _data->x = 3.40e+38; // avoid the origin problem of the addSource compute shader
-    _data->y = 3.40e+38;
+    //_data->x = 3.40e+38; // avoid the origin problem of the addSource compute shader
+    //_data->y = 3.40e+38;
+    _data->x = 0.0;
+    _data->y = 0.0;
     _data->xAcce = 0.0f;
     _data->yAcce = 0.0f;
     _data->state = true;
@@ -93,6 +95,10 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 const int kThreadGroupSizeX = 32;
 const int kThreadGroupSizeY = 32;
+
+bool densityEnable = false;
+bool velocityAdvectEnable = true;
+bool velocityProjectEnable = false;
 
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
@@ -160,7 +166,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _csDiffuse = shift::loadProgram({"diffuse_cs.sc"});
             _csAdvect = shift::loadProgram({"advect_cs.sc"});
 
-            //_csVelocityProject = shift::loadProgram({"velocity_update_cs.sc"});
+            _csVelocityProject = shift::loadProgram({"velocity_project_cs.sc"});
 
             // buffers set up
             bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Write);
@@ -181,7 +187,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::destroy(_csAddSource);
             bgfx::destroy(_csDiffuse);
             bgfx::destroy(_csAdvect);
-            // bgfx::destroy(_csVelocityProject);
+            bgfx::destroy(_csVelocityProject);
             bgfx::destroy(_quadProgram);
             bgfx::destroy(_vbhQuad);
             bgfx::destroy(_ibhQuad);
@@ -206,86 +212,110 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _uParams.deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
 
-            std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            //std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
-            // Velocity compute shaders
-            // add velocity
-            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+            if (velocityAdvectEnable)
+            {
+                // Velocity compute shaders
+                // add velocity
+                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                bgfx::setUniform(_uhParams, &_uParams, 3);
+                bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
+                               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            swap(_prevVelocityField, _curVelocityField);
-            swap(_prevDensityField, _curDensityField);
+                swap(_prevVelocityField, _curVelocityField);
+                //swap(_prevDensityField, _curDensityField);
 
-            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                bgfx::setUniform(_uhParams, &_uParams, 3);
+                bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
+                               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            // need project here
+                // need project here
+                if (velocityProjectEnable)
+                {
+                    bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                    bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                    bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::ReadWrite);
+                    bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                    bgfx::setUniform(_uhParams, &_uParams, 3);
+                    bgfx::dispatch(0, _csVelocityProject, _uParams.bufferWidth / kThreadGroupSizeX,
+                                   _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                }
 
-            swap(_prevVelocityField, _curVelocityField);
+                swap(_prevVelocityField, _curVelocityField);
 
-            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                bgfx::setUniform(_uhParams, &_uParams, 3);
+                bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
+                               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            swap(_prevVelocityField, _curVelocityField);
+                // need project here
+                if (velocityProjectEnable)
+                {
+                    bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                    bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                    bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::ReadWrite);
+                    bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                    bgfx::setUniform(_uhParams, &_uParams, 3);
+                    bgfx::dispatch(0, _csVelocityProject, _uParams.bufferWidth / kThreadGroupSizeX,
+                                   _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                }
 
-            // need project here
+                // set state to false to enable density calculation in the compute shader
+                //_uParams.state = false;
+            }
 
-            // set state to false to enable density calculation in the compute shader
-            _uParams.state = false;
+            if (densityEnable)
+            {
+                /* Note:
+                 * should add source at the same time because of the input system
+                 */
+                // Density compute shaders
+                // dispatch add source compute shader
+                // bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                // bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                // bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                // bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                // bgfx::setUniform(_uhParams, &_uParams, 3);
+                // bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
+                //               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            /* Note:
-             * should add source at the same time because of the input system
-             */
-            // Density compute shaders
-            // dispatch add source compute shader
-            // bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            // bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            // bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            // bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            // bgfx::setUniform(_uhParams, &_uParams, 3);
-            // bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
-            //               _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                //// dont forget to swap the buffer
+                //// std::swap(_prevDensityField, _curDensityField);
 
-            //// dont forget to swap the buffer
-            //// std::swap(_prevDensityField, _curDensityField);
+                // dispatch diffuse compute shader
+                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                bgfx::setUniform(_uhParams, &_uParams, 3);
+                bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
+                               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            // dispatch diffuse compute shader
-            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
+                // std::swap(_prevDensityField, _curDensityField);
+                swap(_prevDensityField, _curDensityField);
 
-            // std::swap(_prevDensityField, _curDensityField);
-            swap(_prevDensityField, _curDensityField);
+                // dispatch advect compute shader
+                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                bgfx::setUniform(_uhParams, &_uParams, 3);
+                bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
+                               _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
-            // dispatch advect compute shader
-            bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-            bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-            bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-            bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-            bgfx::setUniform(_uhParams, &_uParams, 3);
-            bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
-                           _uParams.bufferHeight / kThreadGroupSizeY, 1);
-
-            _uParams.state = true;
+                _uParams.state = true;
+            }
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);

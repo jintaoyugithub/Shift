@@ -27,11 +27,13 @@ void main() {
 
 
 void addSource(uint index, float dt, bool state) {
-    vec2 velocityDir = vec2(uMouseXAcce, uMouseYAcce);
+    //vec2 velocityDir = vec2(uMouseXAcce, uMouseYAcce);
+    vec2 velocityDir = vec2(uMouseXAcce, -uMouseYAcce); // why need -y here
+
     // bug: can not use normalize here
     //curVelocityField[index] += normalize(velocityDir) + prevVelocityField[index] * dt;
     curVelocityField[index] += velocityDir + prevVelocityField[index] * dt;
-    //curDensityField[index] += 0.2 + prevDensityField[index] * dt;
+    curDensityField[index] += 0.2 + prevDensityField[index] * dt;
 }
 
 

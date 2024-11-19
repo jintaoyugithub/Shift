@@ -1,4 +1,5 @@
 #include <utils/common.hpp>
+#include <appBaseGLFW.hpp>
 
 struct PosColorVertex {
     float _x;

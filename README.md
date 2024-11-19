@@ -1,5 +1,12 @@
 # Shift Rendering Framework
 
+## Bugs
+
+### 2024.11.18
+
+- [ ] Multiple click of mouse when try to release the mouse left button
+- [ ] The function `VelocityProject` display black right now
+
 ## FAQ
 
 1. Windows won't pop out in MacOS

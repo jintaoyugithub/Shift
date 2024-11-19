@@ -212,27 +212,21 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _uParams.deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
 
-            //std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            // std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
             if (velocityAdvectEnable)
             {
                 // Velocity compute shaders
                 // add velocity
-                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
                 bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
                                _uParams.bufferHeight / kThreadGroupSizeY, 1);
 
                 swap(_prevVelocityField, _curVelocityField);
-                //swap(_prevDensityField, _curDensityField);
+                // swap(_prevDensityField, _curDensityField);
 
-                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
                 bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
                                _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -240,10 +234,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 // need project here
                 if (velocityProjectEnable)
                 {
-                    bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                    bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                    bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::ReadWrite);
-                    bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                    setComputerBuffers();
                     bgfx::setUniform(_uhParams, &_uParams, 3);
                     bgfx::dispatch(0, _csVelocityProject, _uParams.bufferWidth / kThreadGroupSizeX,
                                    _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -251,10 +242,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
                 swap(_prevVelocityField, _curVelocityField);
 
-                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
                 bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
                                _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -262,10 +250,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 // need project here
                 if (velocityProjectEnable)
                 {
-                    bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                    bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                    bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::ReadWrite);
-                    bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                    setComputerBuffers();
                     bgfx::setUniform(_uhParams, &_uParams, 3);
                     bgfx::dispatch(0, _csVelocityProject, _uParams.bufferWidth / kThreadGroupSizeX,
                                    _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -294,10 +279,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 //// std::swap(_prevDensityField, _curDensityField);
 
                 // dispatch diffuse compute shader
-                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
                 bgfx::dispatch(0, _csDiffuse, _uParams.bufferWidth / kThreadGroupSizeX,
                                _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -306,10 +288,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 swap(_prevDensityField, _curDensityField);
 
                 // dispatch advect compute shader
-                bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+                setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
                 bgfx::dispatch(0, _csAdvect, _uParams.bufferWidth / kThreadGroupSizeX,
                                _uParams.bufferHeight / kThreadGroupSizeY, 1);
@@ -392,6 +371,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     void run(int _argc, const char **_argv) override
     {
         shift::AppBaseGLFW::run(_argc, _argv);
+    }
+
+    void setComputerBuffers()
+    {
+        bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
+        bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
+        bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
+        bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
     }
 
   private:

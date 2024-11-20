@@ -13,6 +13,8 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
         // init the buffer data herer
         spdlog::info("init func call by cube");
 
+        gleqTrackWindow(_window);
+
         imguiCreate();
     }
 
@@ -49,12 +51,31 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
             // if no other draw calls are submitted to view 0.
             bgfx::touch(0);
 
-            if (_helloBgfx)
+            if (!_helloBgfx)
             {
                 std::cout << "hello bgfx" << std::endl;
             }
 
             bgfx::frame();
+
+            // handle inpute event
+            while (gleqNextEvent(&_event))
+            {
+                switch (_event.type)
+                {
+                case GLEQ_CURSOR_MOVED:
+                    // let imgui window know that the cursor in now on its area
+                    glfwGetCursorPos(_window, &_mouseState._x, &_mouseState._y);
+                    break;
+
+                case GLEQ_BUTTON_PRESSED:
+                    _mouseState._buttons[shift::MouseButton::Left] = 1;
+                    break;
+                default:
+                    //_mouseState._buttons[shift::MouseButton::Left] = 1;
+                    break;
+                }
+            }
 
             return true;
         }
@@ -65,7 +86,7 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
     void shutdown() override
     {
         // clean all the buffer data, shader and so on
-        spdlog::info("Shutdown func call by cube");
+        spdlog::info("Shutdown func call by helloBgfx");
 
         imguiDestroy();
     }
@@ -88,6 +109,7 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
 
   private:
     bool _helloBgfx;
+    GLEQevent _event;
 };
 
 int main(int _argc, const char **_argv)

@@ -32,8 +32,8 @@ struct MouseState
         }
     }
 
-    int32_t _x;
-    int32_t _y;
+    double _x;
+    double _y;
     int32_t _z;
     uint8_t _buttons[shift::MouseButton::Count];
 };

@@ -4,7 +4,7 @@
 
 ### 2024.11.20
 
-- [ ] Add UI support!
+- [x] Add UI support!
 - [ ] Refactor the code, to make right mouse click to `add density` and left mouse click to `add velocity`
 
 **Note**: When mouse clicks then add source, so you should dispatch the add source compute shader when the mouse is clicked, may be that can solve the bug of `multiple clicks after releasing the mouse`.
@@ -18,6 +18,9 @@
 - [ ] Use horizontal component and vertical component of the velocity instead of using whole vec2
 - [ ] Finish the velocity component first, including `add velocity`, `advect` and `project`
 
+### 2024.11.21
+
+- [ ] Need to implement the glfw mouse button callback to make sure glfw send the mouse event to the imgui
 
 
 ## Bugs & Questions

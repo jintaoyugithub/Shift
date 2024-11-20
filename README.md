@@ -1,11 +1,53 @@
 # Shift Rendering Framework
 
-## Bugs
+## TODO Lists
+
+### 2024.11.20
+
+- [ ] Add UI support!
+- [ ] Refactor the code, to make right mouse click to `add density` and left mouse click to `add velocity`
+
+**Note**: When mouse clicks then add source, so you should dispatch the add source compute shader when the mouse is clicked, may be that can solve the bug of `multiple clicks after releasing the mouse`.
+
+- [ ] Add the boundary code
+- [ ] Change the velocity calculation from `collocated grid` to `staggered grid` 
+- [ ] Calculate divergence, instead of storing velocity at the center of each cell, stroing the velocity at the edge cell.
+
+**Note**: check the function `ProjectGaussSeidel` in [FluidSim](https://github.com/hughperkins/UnityFluidSim-pub)
+
+- [ ] Use horizontal component and vertical component of the velocity instead of using whole vec2
+- [ ] Finish the velocity component first, including `add velocity`, `advect` and `project`
+
+
+
+## Bugs & Questions
 
 ### 2024.11.18
 
 - [ ] Multiple click of mouse when try to release the mouse left button
 - [ ] The function `VelocityProject` display black right now
+
+### 2024.11.20
+
+- [ ] 我现在通过一个`radius`的变量来控制add velocity的范围，如何让鼠标活动影响的程度从重心向radius减小？
+- [ ] 而且对于速度场来说，在增加速度场的时候，需要使用`+=` 吗？For example
+
+```cpp
+curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
+// or
+curVelocityField[index] = vec2(xVel, yVel); 
+```
+
+- [ ] May be I don't need diffuse, I just `add noise`, it can also save me some performance
+
+So the current steps will be:
+
+- For velocity
+add source -> project -> advect
+
+- For density
+add source -> add noise -> advect
+
 
 ## FAQ
 

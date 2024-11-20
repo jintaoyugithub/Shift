@@ -1,48 +1,101 @@
-#include<utils/common.hpp>
+#include "dear-imgui/imgui.h"
+#include <appBaseGLFW.hpp>
+#include <utils/common.hpp>
+#include <winsock.h>
 
-int main(int _agrc, const char **_argv) {
-  std::cout << "Hello tri" << std::endl;
+class ExampleHelloBGFX final : public shift::AppBaseGLFW
+{
 
-  if (!glfwInit()) {
-    return -1;
-  }
+    void init(int _argc, const char **_argv, uint32_t width, uint32_t height) override
+    {
+        shift::AppBaseGLFW::init(_argc, _argv, width, height);
 
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        // init the buffer data herer
+        spdlog::info("init func call by cube");
 
-  GLFWwindow *window = glfwCreateWindow(800, 600, "test", nullptr, nullptr);
+        imguiCreate();
+    }
 
-  bgfx::Init init;
-  init.type = bgfx::RendererType::OpenGL;
-  init.vendorId = BGFX_PCI_ID_NONE;
-  init.platformData.nwh = shift::glfwNativeWindowHandle(window);
-  init.platformData.ndt = shift::glfwNativeDisplayHandle();
-  init.platformData.type = shift::getNativeWindowHandleType();
-  init.resolution.width = 800;
-  init.resolution.height = 600;
-  init.resolution.reset = BGFX_RESET_VSYNC;
-  bgfx::init(init);
+    bool update() override
+    {
+        if (!glfwWindowShouldClose(_window))
+        {
+            glfwSwapBuffers(_window);
+            glfwPollEvents();
 
-  // Set view 0 clear state.
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f,
-                     0);
+            // begin render imgui
+            imguiBeginFrame(_mouseState._x, _mouseState._y,
+                            (_mouseState._buttons[shift::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) |
+                                (_mouseState._buttons[shift::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) |
+                                (_mouseState._buttons[shift::MouseButton::Middle] ? IMGUI_MBUT_MID : 0),
+                            _mouseState._z, uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
 
-  std::cout << bgfx::getRendererType() << std::endl;
+            // Set the imgui window position
+            ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Settings", NULL, 0);
 
-  bgfx::setViewRect(0, 0, 0, 800, 600);
-  bgfx::touch(0);
+            ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
 
-  while (!glfwWindowShouldClose(window)) {
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+            // dont forget to call end child
+            ImGui::End();
 
-    bgfx::frame();
-  }
+            // end render imgui
+            imguiEndFrame();
 
+            // Set view 0 default viewport.
+            bgfx::setViewRect(0, 0, 0, uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
+            // This dummy draw call is here to make sure that view 0 is cleared
+            // if no other draw calls are submitted to view 0.
+            bgfx::touch(0);
 
-  // shutdown
-  bgfx::shutdown();
-  glfwDestroyWindow(window);
-  glfwTerminate();
+            if (_helloBgfx)
+            {
+                std::cout << "hello bgfx" << std::endl;
+            }
 
-  return 0;
+            bgfx::frame();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void shutdown() override
+    {
+        // clean all the buffer data, shader and so on
+        spdlog::info("Shutdown func call by cube");
+
+        imguiDestroy();
+    }
+
+  public:
+    ExampleHelloBGFX(const char *name, const char *description, const char *url)
+        : shift::AppBaseGLFW(name, description, url)
+    {
+    }
+
+    ~ExampleHelloBGFX()
+    {
+        shutdown();
+    };
+
+    void run(int _argc, const char **_argv) override
+    {
+        AppBaseGLFW::run(_argc, _argv);
+    }
+
+  private:
+    bool _helloBgfx;
+};
+
+int main(int _argc, const char **_argv)
+{
+
+    ExampleHelloBGFX helloBgfx{"Example Cube", "Rendering a Cube with Shift frmework",
+                               "https://github.com/jintaoyugithub/Shift/tree/main/examples/cube"};
+    helloBgfx.run(_argc, _argv);
+
+    return 0;
 }

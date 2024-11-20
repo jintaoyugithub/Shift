@@ -262,22 +262,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             if (densityEnable)
             {
-                /* Note:
-                 * should add source at the same time because of the input system
-                 */
-                // Density compute shaders
-                // dispatch add source compute shader
-                // bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
-                // bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-                // bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-                // bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
-                // bgfx::setUniform(_uhParams, &_uParams, 3);
-                // bgfx::dispatch(0, _csAddSource, _uParams.bufferWidth / kThreadGroupSizeX,
-                //               _uParams.bufferHeight / kThreadGroupSizeY, 1);
-
-                //// dont forget to swap the buffer
-                //// std::swap(_prevDensityField, _curDensityField);
-
                 // dispatch diffuse compute shader
                 setComputerBuffers();
                 bgfx::setUniform(_uhParams, &_uParams, 3);
@@ -377,8 +361,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     {
         bgfx::setBuffer(0, _prevDensityField, bgfx::Access::Read);
         bgfx::setBuffer(1, _curDensityField, bgfx::Access::ReadWrite);
-        bgfx::setBuffer(2, _prevVelocityField, bgfx::Access::Read);
-        bgfx::setBuffer(3, _curVelocityField, bgfx::Access::ReadWrite);
+        bgfx::setBuffer(2, _prevVelocityFieldX, bgfx::Access::Read);
+        bgfx::setBuffer(2, _prevVelocityFieldX, bgfx::Access::Read);
+        bgfx::setBuffer(3, _curVelocityFieldY, bgfx::Access::ReadWrite);
+        bgfx::setBuffer(3, _curVelocityFieldY, bgfx::Access::ReadWrite);
     }
 
   private:
@@ -403,8 +389,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     bgfx::UniformHandle _uhParams;
     bgfx::UniformHandle bufferSize;
 
-    bgfx::DynamicVertexBufferHandle _prevVelocityField;
-    bgfx::DynamicVertexBufferHandle _curVelocityField;
+    bgfx::DynamicVertexBufferHandle _prevVelocityFieldX;
+    bgfx::DynamicVertexBufferHandle _prevVelocityFieldY;
+    bgfx::DynamicVertexBufferHandle _curVelocityFieldX;
+    bgfx::DynamicVertexBufferHandle _curVelocityFieldY;
 
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;

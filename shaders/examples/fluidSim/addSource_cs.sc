@@ -18,7 +18,6 @@ void main() {
     if (dis < _radius) {
         // add density
         addSource(index, uDeltaTime, bool(uState));
-        //test
     } else {
         curDensityField[index] = prevDensityField[index];
         //curVelocityField[index] = prevVelocityField[index];

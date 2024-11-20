@@ -21,7 +21,7 @@ bool AppBaseGLFW::bgfxInit(int _argc, const char **_argv)
     // init bgfx
     bgfx::Init init;
     // init.type = args._type;
-    //init.type = bgfx::RendererType::Vulkan;
+    // init.type = bgfx::RendererType::Vulkan;
     init.type = bgfx::RendererType::OpenGL;
     init.vendorId = args._pciId;
     init.platformData.nwh = shift::glfwNativeWindowHandle(_window);

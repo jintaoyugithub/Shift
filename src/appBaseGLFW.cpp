@@ -1,4 +1,5 @@
 #include <appBaseGLFW.hpp>
+#include <cstdint>
 
 namespace shift
 {
@@ -70,11 +71,16 @@ bool AppBaseGLFW::windowInit(uint32_t width, uint32_t height)
         return false;
     }
 
+    // init input system
+    // gleqTrackWindow(_window);
+
     return true;
 }
 
 bool AppBaseGLFW::uiInit()
 {
+    imguiCreate();
+
     return true;
 }
 
@@ -107,6 +113,10 @@ bool AppBaseGLFW::update()
 void AppBaseGLFW::shutdown()
 {
     spdlog::info("Shutdown func call by AppBaseGLFW");
+
+    // note shoud destory imgui before bgfx
+    imguiDestroy();
+
     bgfx::shutdown();
     glfwDestroyWindow(_window);
     glfwTerminate();

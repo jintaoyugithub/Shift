@@ -1,7 +1,6 @@
-#include "dear-imgui/imgui.h"
+#include "gleq.hpp"
 #include <appBaseGLFW.hpp>
 #include <utils/common.hpp>
-#include <winsock.h>
 
 class ExampleHelloBGFX final : public shift::AppBaseGLFW
 {
@@ -13,9 +12,9 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
         // init the buffer data herer
         spdlog::info("init func call by cube");
 
+        // need to track the gleq again here
+        // otherwise it wont capture the input event
         gleqTrackWindow(_window);
-
-        imguiCreate();
     }
 
     bool update() override
@@ -25,25 +24,25 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
             glfwSwapBuffers(_window);
             glfwPollEvents();
 
-            // begin render imgui
-            imguiBeginFrame(_mouseState._x, _mouseState._y,
-                            (_mouseState._buttons[shift::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) |
-                                (_mouseState._buttons[shift::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) |
-                                (_mouseState._buttons[shift::MouseButton::Middle] ? IMGUI_MBUT_MID : 0),
-                            _mouseState._z, uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
+            // render the imgui frame
+            // imguiBeginFrame(int32_t(_event.pos.x), int32_t(_event.pos.y),
+            //                ((_event.mouse.button == GLFW_MOUSE_BUTTON_LEFT ? IMGUI_MBUT_LEFT : 0) |
+            //                 (_event.mouse.button == GLFW_MOUSE_BUTTON_RIGHT ? IMGUI_MBUT_RIGHT : 0) |
+            //                 (_event.mouse.button == GLFW_MOUSE_BUTTON_MIDDLE ? IMGUI_MBUT_MID : 0)),
+            //                int32_t(_event.scroll.x), uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
 
-            // Set the imgui window position
-            ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Settings", NULL, 0);
+            //// Set the imgui window position
+            // ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
+            // ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
+            // ImGui::Begin("Settings", NULL, 0);
 
-            ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
+            // ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
 
-            // dont forget to call end child
-            ImGui::End();
+            //// dont forget to call end child
+            // ImGui::End();
 
-            // end render imgui
-            imguiEndFrame();
+            //// end render imgui
+            // imguiEndFrame();
 
             // Set view 0 default viewport.
             bgfx::setViewRect(0, 0, 0, uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
@@ -53,7 +52,7 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
 
             if (!_helloBgfx)
             {
-                std::cout << "hello bgfx" << std::endl;
+                std::cout << "hello" << std::endl;
             }
 
             bgfx::frame();
@@ -65,14 +64,16 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
                 {
                 case GLEQ_CURSOR_MOVED:
                     // let imgui window know that the cursor in now on its area
-                    glfwGetCursorPos(_window, &_mouseState._x, &_mouseState._y);
+                    double x, y;
+                    glfwGetCursorPos(_window, &x, &y);
+                    _event.pos.x = x;
+                    _event.pos.y = y;
+
+                    // std::cout << "mouse pos: " << _event.pos.x << " " << _event.pos.y << std::endl;
+                    std::cout << "mouse pos: " << x << " " << y << std::endl;
                     break;
 
                 case GLEQ_BUTTON_PRESSED:
-                    _mouseState._buttons[shift::MouseButton::Left] = 1;
-                    break;
-                default:
-                    //_mouseState._buttons[shift::MouseButton::Left] = 1;
                     break;
                 }
             }
@@ -87,8 +88,6 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
     {
         // clean all the buffer data, shader and so on
         spdlog::info("Shutdown func call by helloBgfx");
-
-        imguiDestroy();
     }
 
   public:
@@ -109,14 +108,14 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
 
   private:
     bool _helloBgfx;
-    GLEQevent _event;
+    // GLEQevent _event;
 };
 
 int main(int _argc, const char **_argv)
 {
 
-    ExampleHelloBGFX helloBgfx{"Example Cube", "Rendering a Cube with Shift frmework",
-                               "https://github.com/jintaoyugithub/Shift/tree/main/examples/cube"};
+    ExampleHelloBGFX helloBgfx{"Example helloBgfx", "A Simple bgfx app with imgui",
+                               "https://github.com/jintaoyugithub/Shift/tree/main/examples/helloBgfx"};
     helloBgfx.run(_argc, _argv);
 
     return 0;

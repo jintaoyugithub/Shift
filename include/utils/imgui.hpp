@@ -2,6 +2,7 @@
 
 #include <bgfx/bgfx.h>
 #include <dear-imgui/imgui.h>
+#include <GLFW/glfw3.h>
 
 #define IMGUI_MBUT_LEFT 0x01
 #define IMGUI_MBUT_RIGHT 0x02
@@ -17,7 +18,7 @@ namespace bx
 struct AllocatorI;
 }
 
-void imguiCreate(float _fontSize = 18.0f, bx::AllocatorI *_allocator = NULL);
+void imguiCreate(GLFWwindow* _window, float _fontSize = 18.0f, bx::AllocatorI *_allocator = NULL);
 void imguiDestroy();
 
 void imguiBeginFrame(int32_t _mx, int32_t _my, uint8_t _button, int32_t _scroll, uint16_t _width, uint16_t _height,

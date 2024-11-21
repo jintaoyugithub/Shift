@@ -5,6 +5,7 @@
 #include <bx/timer.h>
 #include <dear-imgui/imgui.h>
 #include <dear-imgui/imgui_internal.h>
+#include <backends/imgui_impl_glfw.h>
 
 #include <utils/bgfx.hpp>
 #include <utils/imgui.hpp>
@@ -185,7 +186,7 @@ struct OcornutImguiContext
         }
     }
 
-    void create(float _fontSize, bx::AllocatorI *_allocator)
+    void create(GLFWwindow* _window, float _fontSize, bx::AllocatorI *_allocator)
     {
         IMGUI_CHECKVERSION();
 
@@ -210,6 +211,9 @@ struct OcornutImguiContext
         io.DisplaySize = ImVec2(1280.0f, 720.0f);
         io.DeltaTime = 1.0f / 60.0f;
         io.IniFilename = NULL;
+
+        // set context with glfw
+        ImGui_ImplGlfw_InitForOther(_window, true);
 
         setupStyle(true);
 
@@ -448,6 +452,7 @@ struct OcornutImguiContext
         }
 #endif // USE_ENTRY
 
+        ImGui_ImplGlfw_NewFrame(); 
         ImGui::NewFrame();
 
         ImGuizmo::BeginFrame();
@@ -490,9 +495,9 @@ static void memFree(void *_ptr, void *_userData)
     bx::free(s_ctx.m_allocator, _ptr);
 }
 
-void imguiCreate(float _fontSize, bx::AllocatorI *_allocator)
+void imguiCreate(GLFWwindow* _window, float _fontSize, bx::AllocatorI *_allocator)
 {
-    s_ctx.create(_fontSize, _allocator);
+    s_ctx.create(_window, _fontSize, _allocator);
 }
 
 void imguiDestroy()

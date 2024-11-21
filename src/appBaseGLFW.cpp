@@ -79,7 +79,7 @@ bool AppBaseGLFW::windowInit(uint32_t width, uint32_t height)
 
 bool AppBaseGLFW::uiInit()
 {
-    imguiCreate();
+    imguiCreate(_window);
 
     return true;
 }

@@ -27,6 +27,7 @@
 
 #include <GLFW/glfw3.h>
 #include <dear-imgui/imgui.h>
+#include <iostream>
 #include <string.h>
 
 #ifdef GLEQ_STATIC
@@ -244,16 +245,18 @@ static void gleq_framebuffer_size_callback(GLFWwindow *window, int width, int he
 
 static void gleq_mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 {
-    GLEQevent *event = gleq_new_event();
-    event->window = window;
-    event->mouse.button = button;
-    event->mouse.mods = mods;
-
     ImGuiIO &io = ImGui::GetIO();
     io.AddMouseButtonEvent(button, action);
 
     if (!io.WantCaptureMouse)
     {
+        GLEQevent *event = gleq_new_event();
+        event->window = window;
+        event->mouse.button = button;
+        event->mouse.mods = mods;
+
+        std::cout << "mouse button click" << std::endl;
+
         if (action == GLFW_PRESS)
             event->type = GLEQ_BUTTON_PRESSED;
         else if (action == GLFW_RELEASE)
@@ -263,17 +266,17 @@ static void gleq_mouse_button_callback(GLFWwindow *window, int button, int actio
 
 static void gleq_cursor_pos_callback(GLFWwindow *window, double x, double y)
 {
-    GLEQevent *event = gleq_new_event();
-    event->type = GLEQ_CURSOR_MOVED;
-    event->window = window;
-    event->pos.x = (int)x;
-    event->pos.y = (int)y;
-
     ImGuiIO &io = ImGui::GetIO();
     io.AddMousePosEvent(x, y);
 
     if (!io.WantCaptureMouse)
     {
+        GLEQevent *event = gleq_new_event();
+        event->type = GLEQ_CURSOR_MOVED;
+        event->window = window;
+        event->pos.x = (int)x;
+        event->pos.y = (int)y;
+        std::cout << x << y << std::endl;
     }
 }
 

@@ -35,6 +35,10 @@
 - [ ] 我现在通过一个`radius`的变量来控制add velocity的范围，如何让鼠标活动影响的程度从重心向radius减小？
 - [ ] 而且对于速度场来说，在增加速度场的时候，需要使用`+=` 吗？For example
 
+### 2024.11.21
+
+- [ ] Imgui window and glfw window can not communicate, which means they are not in the same context
+
 ```cpp
 curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
 // or

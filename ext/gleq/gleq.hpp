@@ -90,8 +90,8 @@ extern "C"
             // mouse position
             struct
             {
-                int x;
-                int y;
+                double x;
+                double y;
             } pos;
             struct
             {
@@ -249,17 +249,16 @@ static void gleq_mouse_button_callback(GLFWwindow *window, int button, int actio
     event->mouse.button = button;
     event->mouse.mods = mods;
 
-    // ImGuiIO &io = ImGui::GetIO();
-    // io.AddMouseButtonEvent(button, action);
+    ImGuiIO &io = ImGui::GetIO();
+    io.AddMouseButtonEvent(button, action);
 
-    // if (!io.WantCaptureMouse)
-    //{
-    // }
-
-    if (action == GLFW_PRESS)
-        event->type = GLEQ_BUTTON_PRESSED;
-    else if (action == GLFW_RELEASE)
-        event->type = GLEQ_BUTTON_RELEASED;
+    if (!io.WantCaptureMouse)
+    {
+        if (action == GLFW_PRESS)
+            event->type = GLEQ_BUTTON_PRESSED;
+        else if (action == GLFW_RELEASE)
+            event->type = GLEQ_BUTTON_RELEASED;
+    }
 }
 
 static void gleq_cursor_pos_callback(GLFWwindow *window, double x, double y)
@@ -270,12 +269,12 @@ static void gleq_cursor_pos_callback(GLFWwindow *window, double x, double y)
     event->pos.x = (int)x;
     event->pos.y = (int)y;
 
-    // ImGuiIO &io = ImGui::GetIO();
-    // io.AddMousePosEvent(x, y);
+    ImGuiIO &io = ImGui::GetIO();
+    io.AddMousePosEvent(x, y);
 
-    // if (!io.WantCaptureMouse)
-    //{
-    // }
+    if (!io.WantCaptureMouse)
+    {
+    }
 }
 
 static void gleq_cursor_enter_callback(GLFWwindow *window, int entered)

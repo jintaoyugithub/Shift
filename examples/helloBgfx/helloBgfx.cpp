@@ -1,6 +1,8 @@
-#include "gleq.hpp"
+#include "utils/imgui.hpp"
 #include <appBaseGLFW.hpp>
 #include <utils/common.hpp>
+
+double x, y;
 
 class ExampleHelloBGFX final : public shift::AppBaseGLFW
 {
@@ -25,24 +27,27 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
             glfwPollEvents();
 
             // render the imgui frame
-            // imguiBeginFrame(int32_t(_event.pos.x), int32_t(_event.pos.y),
+            // imguiBeginFrame(_event.pos.x, _event.pos.y,
             //                ((_event.mouse.button == GLFW_MOUSE_BUTTON_LEFT ? IMGUI_MBUT_LEFT : 0) |
             //                 (_event.mouse.button == GLFW_MOUSE_BUTTON_RIGHT ? IMGUI_MBUT_RIGHT : 0) |
             //                 (_event.mouse.button == GLFW_MOUSE_BUTTON_MIDDLE ? IMGUI_MBUT_MID : 0)),
             //                int32_t(_event.scroll.x), uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
 
-            //// Set the imgui window position
-            // ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
-            // ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
-            // ImGui::Begin("Settings", NULL, 0);
+            imguiBeginFrame(x, y, 1, int32_t(_event.scroll.x), uint16_t(SHIFT_DEFAULT_WIDTH),
+                            uint16_t(SHIFT_DEFAULT_HEIGHT));
 
-            // ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
+            // Set the imgui window position
+            ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Settings", NULL, 0);
 
-            //// dont forget to call end child
-            // ImGui::End();
+            ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
 
-            //// end render imgui
-            // imguiEndFrame();
+            // dont forget to call end child
+            ImGui::End();
+
+            // end render imgui
+            imguiEndFrame();
 
             // Set view 0 default viewport.
             bgfx::setViewRect(0, 0, 0, uint16_t(SHIFT_DEFAULT_WIDTH), uint16_t(SHIFT_DEFAULT_HEIGHT));
@@ -64,13 +69,10 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
                 {
                 case GLEQ_CURSOR_MOVED:
                     // let imgui window know that the cursor in now on its area
-                    double x, y;
-                    glfwGetCursorPos(_window, &x, &y);
-                    _event.pos.x = x;
-                    _event.pos.y = y;
-
-                    // std::cout << "mouse pos: " << _event.pos.x << " " << _event.pos.y << std::endl;
-                    std::cout << "mouse pos: " << x << " " << y << std::endl;
+                    glfwGetCursorPos(_window, &_event.pos.x, &_event.pos.y);
+                    std::cout << _event.pos.x << std::endl;
+                    x = _event.pos.x;
+                    y = _event.pos.y;
                     break;
 
                 case GLEQ_BUTTON_PRESSED:
@@ -108,7 +110,6 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
 
   private:
     bool _helloBgfx;
-    // GLEQevent _event;
 };
 
 int main(int _argc, const char **_argv)

@@ -8,6 +8,7 @@ set(SOURCES
     "utils/imgui.cpp"
     "utils/common.cpp"
     "${CMAKE_SOURCE_DIR}/ext/imgui/backends/imgui_impl_glfw.cpp")
+    #"${CMAKE_SOURCE_DIR}/ext/imgui/backends/imgui_impl_opengl3.cpp")
 
 add_library(${LIB_NAME} STATIC ${SOURCES})
 

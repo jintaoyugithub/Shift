@@ -56,6 +56,12 @@ add source -> project -> advect
 add source -> add noise -> advect
 
 
+## Reminder
+
+1. Change the source code of `imgui/backends/imgui_impl_glfw.h/cpp` because I use the `dear-imgui` in the `3rdparty` of bgfx
+
+2. Change the `CMakeLists.txt` of the bgfx.cmake to enable `shader model 5` 
+
 ## FAQ
 
 1. Windows won't pop out in MacOS

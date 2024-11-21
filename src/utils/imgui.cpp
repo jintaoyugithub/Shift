@@ -36,6 +36,8 @@
 #include <common/fonts/roboto_regular.ttf.h>
 #include <common/fonts/robotomono_regular.ttf.h>
 
+static GLFWcursor* gMouseCursors[ ImGuiMouseCursor_COUNT ] = { 0 };
+
 static const bgfx::EmbeddedShader s_embeddedShaders[] = {
     BGFX_EMBEDDED_SHADER(vs_ocornut_imgui), BGFX_EMBEDDED_SHADER(fs_ocornut_imgui),
     BGFX_EMBEDDED_SHADER(vs_imgui_image), BGFX_EMBEDDED_SHADER(fs_imgui_image),
@@ -219,6 +221,7 @@ struct OcornutImguiContext
 
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
+
 #if USE_ENTRY
         for (int32_t ii = 0; ii < (int32_t)entry::Key::Count; ++ii)
         {
@@ -383,6 +386,7 @@ struct OcornutImguiContext
     void destroy()
     {
         ImGui::ShutdownDockContext();
+        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext(m_imgui);
 
         bgfx::destroy(s_tex);
@@ -438,6 +442,9 @@ struct OcornutImguiContext
         io.AddMouseButtonEvent(ImGuiMouseButton_Middle, 0 != (_button & IMGUI_MBUT_MID));
         io.AddMouseWheelEvent(0.0f, (float)(_scroll - m_lastScroll));
         m_lastScroll = _scroll;
+
+        // add key binding here
+        
 
 #if USE_ENTRY
         uint8_t modifiers = inputGetModifiersState();

@@ -37,8 +37,8 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
                             uint16_t(SHIFT_DEFAULT_HEIGHT));
 
             // Set the imgui window position
-            ImGui::SetNextWindowPos(ImVec2(getWidth() - getHeight() / 5.0f - 10.0f, 10.0f), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(getWidth() / 5.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(getWidth() / 2.0f, getHeight() / 3.5f), ImGuiCond_FirstUseEver);
             ImGui::Begin("Settings", NULL, 0);
 
             ImGui::Checkbox("Hello Bgfx", &_helloBgfx);
@@ -76,6 +76,7 @@ class ExampleHelloBGFX final : public shift::AppBaseGLFW
                     break;
 
                 case GLEQ_BUTTON_PRESSED:
+                    std::cout << "pressed" << std::endl;
                     break;
                 }
             }

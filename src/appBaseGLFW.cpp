@@ -79,8 +79,6 @@ bool AppBaseGLFW::windowInit(uint32_t width, uint32_t height)
 
 bool AppBaseGLFW::uiInit()
 {
-    imguiCreate(_window);
-
     return true;
 }
 
@@ -113,10 +111,6 @@ bool AppBaseGLFW::update()
 void AppBaseGLFW::shutdown()
 {
     spdlog::info("Shutdown func call by AppBaseGLFW");
-
-    // note shoud destory imgui before bgfx
-    imguiDestroy();
-
     bgfx::shutdown();
     glfwDestroyWindow(_window);
     glfwTerminate();

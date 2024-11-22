@@ -49,6 +49,7 @@ bgfx_compile_shaders(
 add_executable(
   fluidSim
   fluidSim.cpp
+  velocityField.cpp
   # include all the shader files
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"

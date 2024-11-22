@@ -19,7 +19,5 @@
 #define GLEQ_STATIC
 #include <gleq.hpp>
 
-#include <utils/imgui.hpp>
-
 const float SHIFT_DEFAULT_WIDTH = 512.0f;
 const float SHIFT_DEFAULT_HEIGHT = 512.0f;

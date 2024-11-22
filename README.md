@@ -27,7 +27,10 @@
 
 ### 2024.11.18
 
-- [ ] Multiple click of mouse when try to release the mouse left button
+- [x] Multiple click of mouse when try to release the mouse left button
+
+`Posible solution`: reset the mouse pos which sent to the compute shader to 0 or somevalue after click, 因为这样就不会导致传给compute shader的鼠标位置的值一直固定在我松开鼠标的那个位置。
+
 - [ ] The function `VelocityProject` display black right now
 
 ### 2024.11.20

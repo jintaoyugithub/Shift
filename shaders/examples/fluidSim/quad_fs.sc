@@ -1,23 +1,16 @@
 $input v2f_texCoord0
 
 #include "../../utils/bgfx_compute.sh"
-#include "fluidSim_utils.sh"
+#include "velocity_uniforms.sh"
 
 #define bufferSize 512
 
-BUFFER_RO(curDensityField, float, 0);
-BUFFER_RO(curVelocityField, vec2, 1);
+BUFFER_RO(_isFluid, float, 0);
+
 
 void main() {
-	//int index = int(gl_FragCoord.x) + int(uBufferWidth) * int(gl_FragCoord.y);
 	int index = int(gl_FragCoord.x) + bufferSize * int(gl_FragCoord.y);
 
-	//gl_FragColor = vec4(0.5 * curDensityField[index], 0.2 * curDensityField[index], curDensityField[index], 1.0);
-    
-    //gl_FragColor = vec4(0.0, curVelocityField[index], 1.0);
-    
-    // in order to map the velocity from -1-1 to 0-1
-    gl_FragColor = vec4(0.0, curVelocityField[index] * 0.5 + 0.5, 1.0);
-
     //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(1-_isFluid[index].xxx, 1.0);
 }

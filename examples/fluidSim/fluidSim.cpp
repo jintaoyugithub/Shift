@@ -1,10 +1,16 @@
 #include <appBaseGLFW.hpp>
 #include <memory>
-#include <stdio.h>
 #include <utils/common.hpp>
 
-#include "fluidSimUtils.hpp"
+#include "bgfx/bgfx.h"
 #include "velocityField.hpp"
+
+enum ViewportType
+{
+    Velocity,
+    Density,
+    Boundary,
+};
 
 struct quadPosTexCoord
 {
@@ -67,6 +73,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
         if (_computeSupported)
         {
+
             // init vertex layout
             quadPosTexCoord::init();
 
@@ -77,7 +84,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = std::make_unique<VelocityField>(getWidth(), getHeight(), 0.02, 75);
+            velocity = new VelocityField();
+            velocity->dispatch(ProgramType::reset, 0);
         }
     }
 
@@ -88,8 +96,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::destroy(_quadProgram);
             bgfx::destroy(_vbhQuad);
             bgfx::destroy(_ibhQuad);
-            bgfx::destroy(_prevDensityField);
-            bgfx::destroy(_curDensityField);
         }
     }
 
@@ -118,6 +124,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
+            bgfx::setBuffer(0, velocity->getBufferHandle(BufferType::isFluid), bgfx::Access::Read);
             // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
             bgfx::submit(0, _quadProgram);
@@ -137,12 +144,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     double x, y;
                     glfwGetCursorPos(_window, &x, &y);
 
-                    // glm::vec2 velocity = glm::vec2(xDir, yDir);
-                    // velocity = glm::normalize(velocity);
-                    // std::cout << velocity.x << " " << velocity.y << std::endl;
-
+                    // for calculating the velocity of the mouse
                     lastMousePosX = x;
                     lastMousePosY = y;
+
                     break;
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
@@ -177,14 +182,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     bool _computeSupported;
     bool _indirectSupported;
 
-    std::unique_ptr<VelocityField> velocity;
-
     bgfx::ProgramHandle _quadProgram;
     bgfx::VertexBufferHandle _vbhQuad;
     bgfx::IndexBufferHandle _ibhQuad;
 
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;
+
+    VelocityField *velocity;
 };
 
 int main(int _argc, const char **_argv)

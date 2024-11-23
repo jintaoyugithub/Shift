@@ -1,6 +1,4 @@
-#define uniformNums 3
-
-uniform vec4 uParams[uniformNums];
+uniform vec4 uParams[3];
 
 #define uMousePosX              uParams[0].x
 #define uMousePosY              uParams[0].y
@@ -15,3 +13,11 @@ uniform vec4 uParams[uniformNums];
 #define uPersist                uParams[2].x
 #define uDeltaTime              uParams[2].y
 #define uSpeed                  uParams[2].z
+
+uint Index2D(uint x, uint y, float simResX) {
+    return x + uint(simResX) * y;
+}
+
+uint Index3D(uint x, uint y, uint z, float simResX, float simResY) {
+    return 0;
+}

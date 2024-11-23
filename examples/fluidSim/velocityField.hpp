@@ -18,6 +18,7 @@ enum BufferType
     prevVelY,
     curVelX,
     curVelY,
+    isFluid,
 };
 
 struct uParams
@@ -69,7 +70,8 @@ class VelocityField
     void Project(int _viewID);
 
   public:
-    VelocityField(int width, int height, float dt, float speed);
+    // VelocityField(int width, int height, float dt, float speed);
+    VelocityField();
     ~VelocityField();
 
   public:
@@ -79,8 +81,13 @@ class VelocityField
         {
         case ProgramType::reset:
             Reset(_viewID);
+            break;
+        case ProgramType::addSource:
+            AddSource(_viewID);
+            break;
         case ProgramType::advect:
             Advect(_viewID);
+            break;
         case ProgramType::project:
             Project(_viewID);
             break;
@@ -102,6 +109,8 @@ class VelocityField
             break;
         case BufferType::curVelY:
             return _curVelY;
+        case BufferType::isFluid:
+            return _isFluid;
             break;
         }
         return BGFX_INVALID_HANDLE;
@@ -117,7 +126,6 @@ class VelocityField
             return _csAdvect;
         case ProgramType::project:
             return _csProject;
-            break;
         }
         return BGFX_INVALID_HANDLE;
     }

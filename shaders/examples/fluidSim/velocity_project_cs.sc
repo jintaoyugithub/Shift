@@ -33,13 +33,22 @@ void main() {
              v
        */
       float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
-      divergence = _curVelX[RIGHT(index)] + _curVelY[UP(index)] - _curVelX[index] - _curVelY[index];
-      float correction = divergence / neighboursNum;
+      if(neighboursNum > 0) {
+        // if divergence > 0 means positive divergence, we need more velocity out
+        // if divergence <0 means negative divergence, we need more velocity in
+        divergence = _curVelX[RIGHT(index)] + _curVelY[UP(index)] - _curVelX[index] - _curVelY[index];
+        float correction = divergence / neighboursNum;
 
-      if(_isFluid[RIGHT(index)] == 1) _curVelX[index] += correction;
-      if(_isFluid[LEFT(index)] == 1)  _curVelX[index] -= correction;
-      if(_isFluid[UP(index)] == 1)    _curVelY[index] += correction;
-      if(_isFluid[DOWN(index)] == 1)  _curVelY[index] -= correction;
+        // divergence > 0, out not enough, so more out
+        // divergence < 0, out too much, so less out
+        if(_isFluid[LEFT(index)] == 1) _curVelX[index] += correction;
+        if(_isFluid[DOWN(index)] == 1) _curVelY[index] += correction;
+
+        // divergence > 0, enter too much, so less enter
+        // divergence < 0, enter not enough, so more enter
+        if(_isFluid[RIGHT(index)] == 1) _curVelX[RIGHT(index)] -= correction;
+        if(_isFluid[UP(index)] == 1) _curVelY[UP(index)] -= correction;
+      }
     }
   }
 }

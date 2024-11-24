@@ -21,7 +21,7 @@ VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
     _uParams.deltaTime = _dt;
     _uParams.speed = _speed;
     _uParams.offsetX = 0.0f;
-    _uParams.offsetX = 0.0f;
+    _uParams.offsetY = 0.0f;
 
     _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, int(UniformType::count / 4) + 1);
 
@@ -87,6 +87,9 @@ void VelocityField::AddSource(int _viewID)
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAddSource, _groupSizeX, _groupSizeY, _groupSizeZ);
+
+    swap(_curVelX, _prevVelX);
+    swap(_curVelY, _prevVelY);
 }
 
 void VelocityField::Advect(int _viewID)
@@ -137,8 +140,4 @@ void VelocityField::Project(int _viewID)
             }
         }
     }
-
-    // swap the buffer
-    swap(_prevVelX, _curVelX);
-    swap(_prevVelY, _curVelY);
 }

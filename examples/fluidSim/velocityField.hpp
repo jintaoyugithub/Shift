@@ -70,8 +70,8 @@ class VelocityField
     void Project(int _viewID);
 
   public:
-    // VelocityField(int width, int height, float dt, float speed);
-    VelocityField();
+    VelocityField(int _width, int _height, float _dt, float _speed);
+    // VelocityField();
     ~VelocityField();
 
   public:
@@ -109,6 +109,7 @@ class VelocityField
             break;
         case BufferType::curVelY:
             return _curVelY;
+            break;
         case BufferType::isFluid:
             return _isFluid;
             break;
@@ -122,10 +123,13 @@ class VelocityField
         {
         case ProgramType::reset:
             return _csReset;
+            break;
         case ProgramType::advect:
             return _csAdvect;
+            break;
         case ProgramType::project:
             return _csProject;
+            break;
         }
         return BGFX_INVALID_HANDLE;
     }

@@ -22,6 +22,10 @@
 
 - [ ] Need to implement the glfw mouse button callback to make sure glfw send the mouse event to the imgui
 
+### 2024.11.24
+
+- [ ] interpolate the color
+
 
 ## Bugs & Questions
 
@@ -85,7 +89,9 @@ In the file `bgfxToolUtils.cmake`, comment the line `list(APPEND PROFILES s_4_0)
 
 The origin of gl_FragCoord is bottom left, however the origin of glfwGetCursorPos() is top left
 
-6. uniforms structure
+**6. uniforms**
+
+- Uniform structure
 
 If you want to send a struct uniform, for example:
 
@@ -121,6 +127,15 @@ void init(data* _data) {
 }
 ```
 
+- Uniform data
+
+the value you sent to the uniform must be **represent as float**, which means for example:
+
+```cpp
+_data = 0.0f; // Correct
+_data = 0.0;  // false, will be consider as double
+```
+
 7. Framerate issues
 
 I'm not sure why the frame rate in this project changes with the display's maximum refresh rate. For example, with a 60Hz monitor, the frame rate is capped at 60, but when I switch to a 140Hz monitor, it reaches 140. Disabling V-Sync in the NVIDIA control panel under 3D settings unlocks the frame rate limit.
@@ -128,3 +143,4 @@ I'm not sure why the frame rate in this project changes with the display's maxim
 8. `.sh` file doesn't update after modified it
 
 You should update the shader, for example, add some comments, in order to make the `bgfx` rebuild the shader.
+

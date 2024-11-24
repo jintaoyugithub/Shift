@@ -6,8 +6,7 @@
 #include "velocityField.hpp"
 #include <intrin.h>
 
-// VelocityField::VelocityField(int width, int height, float dt, float speed)
-VelocityField::VelocityField()
+VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
 {
     // init uniforms and uniform handle
     _uParams.mousePosX = 3.40e+38; // avoid the origin problem of the addSource compute shader
@@ -15,14 +14,14 @@ VelocityField::VelocityField()
     _uParams.mouseVelX = 0.0f;
     _uParams.mouseVelY = 0.0f;
     _uParams.radius = 5.0f;
-    _uParams.simResX = SHIFT_DEFAULT_WIDTH;
-    _uParams.simResY = SHIFT_DEFAULT_HEIGHT;
-    _uParams.simResZ = 1;
-    _uParams.persist = false;
-    _uParams.deltaTime = 0.002;
-    _uParams.speed = 75;
+    _uParams.simResX = float(_width);
+    _uParams.simResY = float(_height);
+    _uParams.simResZ = 1.0f;
+    _uParams.persist = float(false);
+    _uParams.deltaTime = _dt;
+    _uParams.speed = _speed;
 
-    _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, int(UniformType::count / 4));
+    _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, int(UniformType::count / 4) + 1);
 
     // init the compute shader group size
     _groupSizeX = _uParams.simResX / kThreadGroupSizeX;
@@ -46,9 +45,9 @@ VelocityField::VelocityField()
 
     // init compute shaders
     _csReset = shift::loadProgram({"velocity_reset_cs.sc"});
-    //_csAddSource = shift::loadProgram({"velocity_addSource_cs.sc"});
-    //_csAdvect = shift::loadProgram({"velocity_advect_cs.sc"});
-    //_csProject = shift::loadProgram({"velocity_project_cs.sc"});
+    _csAddSource = shift::loadProgram({"velocity_addSource_cs.sc"});
+    _csAdvect = shift::loadProgram({"velocity_advect_cs.sc"});
+    _csProject = shift::loadProgram({"velocity_project_cs.sc"});
 }
 
 VelocityField::~VelocityField()
@@ -72,7 +71,7 @@ void VelocityField::Reset(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::Write);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::Write);
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Write);
-    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4));
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csReset, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
 
@@ -84,7 +83,7 @@ void VelocityField::AddSource(int _viewID)
     bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
     // might need to change the access????
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
-    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4));
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAddSource, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
 
@@ -95,7 +94,7 @@ void VelocityField::Advect(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
-    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4));
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAdvect, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
 
@@ -106,6 +105,6 @@ void VelocityField::Project(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
-    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4));
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csProject, _groupSizeX, _groupSizeY, _groupSizeZ);
 }

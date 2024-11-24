@@ -64,8 +64,6 @@ extern "C"
         GLEQ_CODEPOINT_INPUT,
         GLEQ_MONITOR_CONNECTED,
         GLEQ_MONITOR_DISCONNECTED,
-        GLEQ_IMGUI_BUTTON_PPRESSED,
-        GLEQ_IMGUI_BUTTON_RELEASED,
 #if GLFW_VERSION_MINOR >= 1
         GLEQ_FILE_DROPPED,
 #endif
@@ -144,8 +142,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-
-#define GLEQ_IMPLEMENTATION
 
 #ifdef GLEQ_IMPLEMENTATION
 

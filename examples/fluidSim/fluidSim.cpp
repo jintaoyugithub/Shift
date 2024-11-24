@@ -2,7 +2,10 @@
 #include <memory>
 #include <utils/common.hpp>
 
+#include "GLFW/glfw3.h"
 #include "bgfx/bgfx.h"
+#include "bx/string.h"
+#include "gleq.hpp"
 #include "velocityField.hpp"
 
 enum ViewportType
@@ -50,6 +53,7 @@ static const uint16_t quadIndices[] = {
 float lastFrame = 0.0f;
 double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
+bool isPressed = false;
 
 bool densityEnable = false;
 bool velocityAdvectEnable = false;
@@ -84,7 +88,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField();
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 10.0f);
+
             velocity->dispatch(ProgramType::reset, 0);
         }
     }
@@ -125,6 +130,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
             bgfx::setBuffer(0, velocity->getBufferHandle(BufferType::isFluid), bgfx::Access::Read);
+            bgfx::setBuffer(1, velocity->getBufferHandle(BufferType::curVelX), bgfx::Access::Read);
+            bgfx::setBuffer(2, velocity->getBufferHandle(BufferType::curVelY), bgfx::Access::Read);
             // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
             bgfx::setState(BGFX_STATE_DEFAULT);
             bgfx::submit(0, _quadProgram);
@@ -138,19 +145,53 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 {
                 case GLEQ_BUTTON_PRESSED:
                     std::cout << "left button pressed" << std::endl;
+                    isPressed = true;
                     break;
-                case GLEQ_CURSOR_MOVED:
-                    // set up uniforms
-                    double x, y;
-                    glfwGetCursorPos(_window, &x, &y);
 
-                    // for calculating the velocity of the mouse
-                    lastMousePosX = x;
-                    lastMousePosY = y;
+                case GLEQ_CURSOR_MOVED: {
+                    if (isPressed)
+                    {
+                        // set up uniforms
+                        double x, y;
+                        glfwGetCursorPos(_window, &x, &y);
 
+                        // calculate the velocity dir
+                        glm::vec2 velDir = glm::vec2(x - lastMousePosX, y - lastMousePosY);
+                        velDir = glm::normalize(velDir);
+
+                        // update uniforms
+                        velocity->updateUniforms(UniformType::mousePosX, x);
+                        velocity->updateUniforms(UniformType::mousePosY, y);
+                        velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
+                        // the origin is in the top left
+                        velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
+
+                        // for calculating the velocity dir of the mouse
+                        lastMousePosX = _event.pos.x;
+                        lastMousePosY = _event.pos.y;
+
+                        // dispatch shader
+                        velocity->dispatch(ProgramType::addSource, 0);
+                        // Debug info
+                        // std::cout << velDir.x << " " << velDir.y << std::endl;
+                    }
                     break;
+                }
+
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
+                    isPressed = false;
+                    break;
+
+                case GLEQ_KEY_PRESSED:
+                    if (_event.keyboard.key == GLFW_KEY_R)
+                    {
+                        std::cout << "Reset the program" << std::endl;
+                        velocity->dispatch(ProgramType::reset, 0);
+                    }
+                    break;
+
+                case GLEQ_KEY_RELEASED:
                     break;
                 }
 

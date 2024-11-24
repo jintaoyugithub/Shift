@@ -1,46 +1,45 @@
 #include "../../utils/bgfx_compute.sh"
-#include "fluidSim_utils.sh"
+#include "velocity_uniforms.sh"
 
-BUFFER_RO(prevDensityField, float, 0);
-BUFFER_RW(curDensityField, float, 1);
-BUFFER_RW(prevVelocityField, vec2, 2);
-BUFFER_RW(curVelocityField, vec2, 3);
+BUFFER_RW(_curVelX, float, 0);
+BUFFER_RW(_curVelY, float, 1);
+BUFFER_RO(_isFluid, float, 2);
 
-NUM_THREADS(32, 32, 1)
+NUM_THREADS(8, 8, 1)
 void main() {
-    project(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
-}
+  uvec2 pos = gl_GlobalInvocationID.xy;
 
-void project(uint x, uint y) {
-    float h = 1 / uBufferWidth;
+  // offset the pos so that we can stagger the divergence
+  pos.x = (pos.x << 1) + uint(uOffsetX);
+  pos.y = (pos.y << 1) + uint(uOffsetY);
 
-    uint curIndex = calIndex(x, y, uBufferWidth);
-    uint prevXIndex = calIndex(x-1, y, uBufferWidth);
-    uint prevYIndex = calIndex(x, y-1, uBufferWidth);
-    uint nextXIndex = calIndex(x+1, y, uBufferWidth);
-    uint nextYIndex = calIndex(x, y+1, uBufferWidth);
+  uint index = Index2D(pos.x, pos.y, uSimResX);
 
-    prevVelocityField[curIndex] = vec2(0.0, 
-        -0.5 * h * (
-        curVelocityField[nextXIndex].x - curVelocityField[prevXIndex].x +
-        curVelocityField[nextYIndex].y - curVelocityField[prevYIndex].y));
+  // if out of the boundray
+  if(pos.x > uint(uSimResX-1) || pos.y > uint(uSimResY-1)) return;
 
-    int itr = 20;
+  float divergence = 0;
+  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY -1)) {
+    if(_isFluid[index] == 1) {
+      // we assume that velocity x enter from right side of the current cell and exit from its left
+      // velocity y enter from up and left from down, like
+      /* 
+          -------
+         |   |   |
+      <- |   v <-|
+         |       |
+          ------- 
+             |
+             v
+       */
+      float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
+      divergence = _curVelX[RIGHT(index)] + _curVelY[UP(index)] - _curVelX[index] - _curVelY[index];
+      float correction = divergence / neighboursNum;
 
-    for(int i=0; i<itr; i++) {
-        prevVelocityField[curIndex] = vec2(
-          (prevVelocityField[curIndex].y +
-          prevVelocityField[prevXIndex].x +
-          prevVelocityField[prevYIndex].x +
-          prevVelocityField[nextXIndex].x +
-          prevVelocityField[nextYIndex].x) / 
-          4,
-          prevVelocityField[curIndex].y
-        );
+      if(_isFluid[RIGHT(index)] == 1) _curVelX[index] += correction;
+      if(_isFluid[LEFT(index)] == 1)  _curVelX[index] -= correction;
+      if(_isFluid[UP(index)] == 1)    _curVelY[index] += correction;
+      if(_isFluid[DOWN(index)] == 1)  _curVelY[index] -= correction;
     }
-
-    curVelocityField[curIndex] -= 0.5 * vec2(
-        (prevVelocityField[nextXIndex].x - prevVelocityField[prevXIndex].x) / h,
-        (prevVelocityField[nextYIndex].x - prevVelocityField[prevYIndex].x) / h
-    );
+  }
 }

@@ -20,6 +20,8 @@ VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
     _uParams.persist = float(false);
     _uParams.deltaTime = _dt;
     _uParams.speed = _speed;
+    _uParams.offsetX = 0.0f;
+    _uParams.offsetX = 0.0f;
 
     _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, int(UniformType::count / 4) + 1);
 
@@ -98,13 +100,45 @@ void VelocityField::Advect(int _viewID)
     bgfx::dispatch(_viewID, _csAdvect, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
 
+// Gauss-Seidel method to solve the linear equation
+// check https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method
 void VelocityField::Project(int _viewID)
 {
-    bgfx::setBuffer(0, _prevVelX, bgfx::Access::Read);
-    bgfx::setBuffer(1, _prevVelY, bgfx::Access::Read);
-    bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
-    bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
-    bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
-    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
-    bgfx::dispatch(_viewID, _csProject, _groupSizeX, _groupSizeY, _groupSizeZ);
+    for (int i = 0; i < solverItr; i++)
+    {
+        for (int passX = 0; passX < 2; passX++)
+        {
+            for (int passY = 0; passY < 2; passY++)
+            {
+                /*
+                   The first offset (0,0), assume we have a 5x5 grid
+                   |1|0|1|0|1|
+                   |0|1|0|1|0|
+                   |1|0|1|0|1|
+                   |0|1|0|1|0|
+                   |1|0|1|0|1|
+                   1 means need to be cleaned
+
+                   Next offset (1,0) will be:
+                   |0|1|0|1|0|
+                   |1|0|1|0|1|
+                   |0|1|0|1|0|
+                   |1|0|1|0|1|
+                   |0|1|0|1|0|
+                 */
+                updateUniforms(UniformType::offsetX, float(passX));
+                updateUniforms(UniformType::offsetY, float(passY));
+
+                bgfx::setBuffer(0, _curVelX, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(1, _curVelY, bgfx::Access::ReadWrite);
+                bgfx::setBuffer(2, _isFluid, bgfx::Access::Read);
+                bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
+                bgfx::dispatch(_viewID, _csProject, _groupSizeX, _groupSizeY, _groupSizeZ);
+            }
+        }
+    }
+
+    // swap the buffer
+    swap(_prevVelX, _curVelX);
+    swap(_prevVelY, _curVelY);
 }

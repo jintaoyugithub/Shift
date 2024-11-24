@@ -118,14 +118,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             // std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
 
-            if (velocityAdvectEnable)
-            {
-            }
-
-            if (densityEnable)
-            {
-            }
-
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
@@ -172,8 +164,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
                         // dispatch shader
                         velocity->dispatch(ProgramType::addSource, 0);
+
                         // Debug info
-                        // std::cout << velDir.x << " " << velDir.y << std::endl;
+                        //std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
                     break;
                 }
@@ -181,6 +174,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
                     isPressed = false;
+                    velocity->dispatch(ProgramType::project, 0);
                     break;
 
                 case GLEQ_KEY_PRESSED:

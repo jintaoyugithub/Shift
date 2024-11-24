@@ -38,6 +38,10 @@ struct uParams
 
     float deltaTime;
     float speed;
+
+    // these offsets are used for staggering the clearing of the divergence for the corresponding cell
+    float offsetX;
+    float offsetY;
 };
 
 enum UniformType
@@ -57,6 +61,9 @@ enum UniformType
 
     deltaTime,
     speed,
+
+    offsetX,
+    offsetY,
 
     count,
 };
@@ -124,6 +131,9 @@ class VelocityField
         case ProgramType::reset:
             return _csReset;
             break;
+        case ProgramType::addSource:
+            return _csAddSource;
+            break;
         case ProgramType::advect:
             return _csAdvect;
             break;
@@ -171,8 +181,17 @@ class VelocityField
         case UniformType::speed:
             _uParams.speed = val;
             break;
+        case UniformType::offsetX:
+            _uParams.offsetX = val;
+            break;
+        case UniformType::offsetY:
+            _uParams.offsetY = val;
+            break;
         }
     }
+
+  public:
+    int solverItr = 100;
 
   private:
     int _groupSizeX;

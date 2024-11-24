@@ -88,7 +88,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 75.0f);
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 50.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -117,6 +117,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             lastFrame = curFrame;
 
             // std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            velocity->dispatch(ProgramType::project, 0);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
@@ -165,8 +166,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // dispatch shader
                         velocity->dispatch(ProgramType::addSource, 0);
 
-                        // velocity->dispatch(ProgramType::project, 0);
-
                         // Debug info
                         // std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
@@ -176,7 +175,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 case GLEQ_BUTTON_RELEASED:
                     std::cout << "left button released" << std::endl;
                     isPressed = false;
-                    velocity->dispatch(ProgramType::project, 0);
                     break;
 
                 case GLEQ_KEY_PRESSED:

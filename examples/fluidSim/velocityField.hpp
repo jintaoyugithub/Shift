@@ -191,7 +191,7 @@ class VelocityField
     }
 
   public:
-    int solverItr = 100;
+    int solverItr = 10;
 
   private:
     int _groupSizeX;

@@ -116,7 +116,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             float deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
 
-            // std::cout << "FPS: " << 1 / _uParams.deltaTime << std::endl;
+            std::cout << "FPS: " << 1 / deltaTime << std::endl;
+
             velocity->dispatch(ProgramType::project, 0);
 
             /* Quad rendering */

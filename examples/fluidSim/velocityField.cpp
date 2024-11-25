@@ -88,8 +88,8 @@ void VelocityField::AddSource(int _viewID)
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAddSource, _groupSizeX, _groupSizeY, _groupSizeZ);
 
-    swap(_curVelX, _prevVelX);
-    swap(_curVelY, _prevVelY);
+    swap(_prevVelX, _curVelX);
+    swap(_prevVelY, _curVelY);
 }
 
 void VelocityField::Advect(int _viewID)
@@ -101,6 +101,9 @@ void VelocityField::Advect(int _viewID)
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAdvect, _groupSizeX, _groupSizeY, _groupSizeZ);
+
+    swap(_prevVelX, _curVelX);
+    swap(_prevVelY, _curVelY);
 }
 
 // Gauss-Seidel method to solve the linear equation

@@ -12,9 +12,6 @@ void main() {
   uvec2 pos = gl_GlobalInvocationID.xy;
   uint index = Index2D(pos.x, pos.y, uSimResX);
 
-  float x = uOffsetX;
-  float y = uOffsetY;
-
   // calculate the distance from the current cell to the mouse position
   float dis = distance(pos, vec2(uMousePosX, uSimResY - uMousePosY));
 

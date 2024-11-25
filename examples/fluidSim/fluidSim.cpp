@@ -87,7 +87,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 10.0f);
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 70.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -170,8 +170,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // dispatch shader
                         velocity->dispatch(ProgramType::addSource, 0);
 
-                        // Debug info
-                        // std::cout << velDir.x << " " << velDir.y << std::endl;
+                        // velocity->dispatch(ProgramType::advect, 0);
+                        //  Debug info
+                        //  std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
                     break;
                 }

@@ -34,8 +34,11 @@ void main() {
       //float colorX = _curVelX[index] == 0 ? 0 : _curVelX[index] * 0.5 + 0.5;
       //float colorY = _curVelY[index] == 0 ? 0 : _curVelY[index] * 0.5 + 0.5;
 
-      float colorX = _curVelX[index] == 0 ? 0 : _curVelX[index];
-      float colorY = _curVelY[index] == 0 ? 0 : _curVelY[index];
+      //float colorX = _curVelX[index] <= 0 ? 0 : _curVelX[index];
+      //float colorY = _curVelY[index] <= 0 ? 0 : _curVelY[index];
+
+      float colorX = _curVelX[index] <= 0 ? -_curVelX[index] : _curVelX[index];
+      float colorY = _curVelY[index] <= 0 ? -_curVelY[index] : _curVelY[index];
       gl_FragColor = vec4(0.0, colorX, colorY, 1.0);
       
       //gl_FragColor = vec4(1.0,0.0,0.0,1.0);

@@ -48,8 +48,10 @@ BUFFER_RO(_isFluid, float, 4);
 
 float InterpolateCurVelX(uvec2 pos, uint index) {
   
-  bool hasDown = bool(_isFluid[DOWN(index)]);
-  bool hasRight = bool(_isFluid[RIGHT(index)]);
+  //bool hasDown = bool(_isFluid[DOWN(index)]);
+  //bool hasRight = bool(_isFluid[RIGHT(index)]);
+  bool hasDown = pos.y > 0;
+  bool hasRight = float(pos.x) < uSimResX-1;
   float velX_tl = _prevVelX[index];
   float velX_tr = hasRight ? _prevVelX[RIGHT(index)] : 0.0;
   float velX_bl = hasDown ? _prevVelX[DOWN(index)] : 0.0;
@@ -61,8 +63,10 @@ float InterpolateCurVelX(uvec2 pos, uint index) {
 
 float InterpolateCurVelY(uvec2 pos, uint index) {
   // hasLeft = pos.x > 0;
-  bool hasLeft = bool(_isFluid[LEFT(index)]);
-  bool hasUp = bool(_isFluid[UP(index)]);
+  //bool hasLeft = bool(_isFluid[LEFT(index)]);
+  //bool hasUp = bool(_isFluid[UP(index)]);
+  bool hasLeft = pos.x > 0;
+  bool hasUp = float(pos.y) < uSimResY-1;
   float velY_br = _prevVelY[index];
   float velY_bl = hasLeft ? _prevVelY[LEFT(index)] : 0.0;
   float velY_tl = (hasLeft && hasUp) ? _prevVelY[UP(LEFT(index))] : 0.0;
@@ -152,5 +156,8 @@ void main() {
       AdvectVelX(pos, index);
       AdvectVelY(pos, index);
     }
-  }
+    } else {
+      _curVelX[index] = _prevVelX[index];
+      _curVelY[index] = _prevVelY[index];
+    }
 }

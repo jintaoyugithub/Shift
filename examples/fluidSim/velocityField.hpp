@@ -101,7 +101,7 @@ class VelocityField
         }
     }
 
-    inline bgfx::DynamicVertexBufferHandle getBufferHandle(BufferType _type)
+    inline bgfx::DynamicVertexBufferHandle &getBufferHandle(BufferType _type)
     {
         switch (_type)
         {
@@ -121,7 +121,6 @@ class VelocityField
             return _isFluid;
             break;
         }
-        return BGFX_INVALID_HANDLE;
     }
 
     inline bgfx::ProgramHandle getProgramHandle(ProgramType _type)
@@ -191,7 +190,7 @@ class VelocityField
     }
 
   public:
-    int solverItr = 10;
+    int solverItr = 100;
 
   private:
     int _groupSizeX;

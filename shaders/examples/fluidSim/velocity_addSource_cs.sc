@@ -22,7 +22,11 @@ void main() {
     //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
     //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
     
-    _curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
-    _curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
+    //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
+    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
+
+    _curVelX[index] = uMouseVelX * speedDeltaTime;
+    _curVelY[index] = uMouseVelY * speedDeltaTime;
+    _isFluid[index] = 0.0;
   }
 }

@@ -5,7 +5,9 @@
 #include "GLFW/glfw3.h"
 #include "bgfx/bgfx.h"
 #include "bx/string.h"
+#include "fluidSimUtils.hpp"
 #include "gleq.hpp"
+#include "tinystl/buffer.h"
 #include "velocityField.hpp"
 
 enum ViewportType
@@ -87,7 +89,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 70.0f);
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 50.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -115,13 +117,16 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             float deltaTime = curFrame - lastFrame;
             lastFrame = curFrame;
 
-            std::cout << "FPS: " << 1 / deltaTime << std::endl;
+            // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
             // dispatch advect compute shader
             velocity->dispatch(ProgramType::advect, 0);
 
+            swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
+            swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
+
             // dispatch project compute shader
-            velocity->dispatch(ProgramType::project, 0);
+            // velocity->dispatch(ProgramType::project, 0);
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
@@ -170,9 +175,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // dispatch shader
                         velocity->dispatch(ProgramType::addSource, 0);
 
+                        swap(velocity->getBufferHandle(BufferType::prevVelX),
+                             velocity->getBufferHandle(BufferType::curVelX));
+                        swap(velocity->getBufferHandle(BufferType::prevVelY),
+                             velocity->getBufferHandle(BufferType::curVelY));
+
                         // velocity->dispatch(ProgramType::advect, 0);
                         //  Debug info
-                        //  std::cout << velDir.x << " " << velDir.y << std::endl;
+                        std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
                     break;
                 }

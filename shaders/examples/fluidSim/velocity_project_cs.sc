@@ -38,7 +38,8 @@ void main() {
         // if divergence <0 means negative divergence, we need more velocity in
         divergence = _curVelX[RIGHT(index)] + _curVelY[UP(index)] - _curVelX[index] - _curVelY[index];
         // multiple 1.95 is call overrelaxtion
-        float correction = 1.95 * divergence / neighboursNum;
+        //float correction = 1.95 * divergence / neighboursNum;
+        float correction = divergence / neighboursNum;
 
         // divergence > 0, out not enough, so more out
         // divergence < 0, out too much, so less out

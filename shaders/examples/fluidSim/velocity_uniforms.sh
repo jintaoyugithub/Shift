@@ -19,6 +19,8 @@ uniform vec4 uParams[4];
 #define uOffsetX                  uParams[2].w
 #define uOffsetY                  uParams[3].x
 
+#define speedDeltaTime (uDeltaTime * uSpeed)
+
 uint LEFT(uint idx) {
     return idx - 1;
 }
@@ -42,4 +44,3 @@ uint Index2D(uint x, uint y, float simResX) {
 uint Index3D(uint x, uint y, uint z, float simResX, float simResY) {
     return 0;
 }
-

@@ -5,27 +5,35 @@
 ### 2024.11.20
 
 - [x] Add UI support!
-- [ ] Refactor the code, to make right mouse click to `add density` and left mouse click to `add velocity`
+- [x] Refactor the code, to make right mouse click to `add density` and left mouse click to `add velocity`
 
 **Note**: When mouse clicks then add source, so you should dispatch the add source compute shader when the mouse is clicked, may be that can solve the bug of `multiple clicks after releasing the mouse`.
 
-- [ ] Add the boundary code
-- [ ] Change the velocity calculation from `collocated grid` to `staggered grid` 
-- [ ] Calculate divergence, instead of storing velocity at the center of each cell, stroing the velocity at the edge cell.
+- [x] Add the boundary code
+- [x] Change the velocity calculation from `collocated grid` to `staggered grid` 
+- [x] Calculate divergence, instead of storing velocity at the center of each cell, stroing the velocity at the edge cell.
 
 **Note**: check the function `ProjectGaussSeidel` in [FluidSim](https://github.com/hughperkins/UnityFluidSim-pub)
 
-- [ ] Use horizontal component and vertical component of the velocity instead of using whole vec2
+- [x] Use horizontal component and vertical component of the velocity instead of using whole vec2
 - [ ] Finish the velocity component first, including `add velocity`, `advect` and `project`
+    - [x] add velocity
+    - [x] project
+    - [ ] advect
 
 ### 2024.11.21
 
-- [ ] Need to implement the glfw mouse button callback to make sure glfw send the mouse event to the imgui
+- [x] Need to implement the glfw mouse button callback to make sure glfw send the mouse event to the imgui
 
 ### 2024.11.24
 
 - [ ] interpolate the color
 
+### 2024.11.25
+
+- [ ] finish `advect` function, we can run interpolate in `afvect` first, then add advect
+- [ ] add camera movement
+- [ ] interpolate the velocity after `add source`
 
 ## Bugs & Questions
 

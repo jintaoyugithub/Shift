@@ -19,7 +19,13 @@ void main() {
   float dis = distance(pos, vec2(uMousePosX, uSimResY - uMousePosY));
 
   if(dis < uRadius) {
-    _curVelX[index] += uMouseVelX * uDeltaTime * uSpeed + _prevVelX[index];
-    _curVelY[index] += uMouseVelY * uDeltaTime * uSpeed + _prevVelY[index];
+    //_curVelX[index] += uMouseVelX * speedDeltaTime  + _prevVelX[index];
+    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index];
+    
+    //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
+    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
+    
+    _curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
+    _curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
   }
 }

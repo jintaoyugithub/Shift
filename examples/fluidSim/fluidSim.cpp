@@ -77,7 +77,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
         if (_computeSupported)
         {
-
             // init vertex layout
             quadPosTexCoord::init();
 
@@ -88,7 +87,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 50.0f);
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 10.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -118,6 +117,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
+            // dispatch advect compute shader
+            velocity->dispatch(ProgramType::advect, 0);
+
+            // dispatch project compute shader
             velocity->dispatch(ProgramType::project, 0);
 
             /* Quad rendering */

@@ -17,13 +17,27 @@ void main() {
       gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     } else {
       // draw the velocity
-      //float colorX = _curVelX[index] == 0 ? 0 : _curVelX[index] * 0.5 + 0.5;
-      //float colorY = _curVelY[index] == 0 ? 0 : _curVelY[index] * 0.5 + 0.5;
-      float colorX = _curVelX[index];
-      float colorY = _curVelY[index];
-      gl_FragColor = vec4(0.0, colorX, colorY, 1.0);
+      //vec4 colorX = _curVelX[index] > 0 ? 
+      //                       vec4(_curVelX[index], 0.0, 0.0, 1.0) : 
+      //                       vec4(0.0, _curVelX[index]*0.5+0.5, _curVelX[index]*0.5+0.5, 1.0);
+      //                       //vec4(0.0, _curVelX[index]*0.5+0.5, 0.0, 1.0);
+
+      //vec4 colorY = _curVelY[index] > 0 ? 
+      //                       vec4(0.0, _curVelY[index], 0.0, 1.0) :
+      //                       vec4(_curVelY[index]*0.5+0.5, 0.0, _curVelY[index]*0.5+0.5, 1.0);
+                             //vec4(0.0, 0.0, _curVelY[index]*0.5+0.5, 1.0);
+
+      //gl_FragColor = mix(colorX, colorY, 0.5);
+      //gl_FragColor = colorX + colorY;
 
       // Debug
+      //float colorX = _curVelX[index] == 0 ? 0 : _curVelX[index] * 0.5 + 0.5;
+      //float colorY = _curVelY[index] == 0 ? 0 : _curVelY[index] * 0.5 + 0.5;
+
+      float colorX = _curVelX[index] == 0 ? 0 : _curVelX[index];
+      float colorY = _curVelY[index] == 0 ? 0 : _curVelY[index];
+      gl_FragColor = vec4(0.0, colorX, colorY, 1.0);
+      
       //gl_FragColor = vec4(1.0,0.0,0.0,1.0);
     }
 }

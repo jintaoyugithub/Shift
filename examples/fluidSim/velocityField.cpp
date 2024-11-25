@@ -13,7 +13,7 @@ VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
     _uParams.mousePosY = 3.40e+38;
     _uParams.mouseVelX = 0.0f;
     _uParams.mouseVelY = 0.0f;
-    _uParams.radius = 5.0f;
+    _uParams.radius = 10.0f;
     _uParams.simResX = float(_width);
     _uParams.simResY = float(_height);
     _uParams.simResZ = 1.0f;

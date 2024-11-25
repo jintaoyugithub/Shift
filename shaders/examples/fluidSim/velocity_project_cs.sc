@@ -37,7 +37,7 @@ void main() {
         // if divergence > 0 means positive divergence, we need more velocity out
         // if divergence <0 means negative divergence, we need more velocity in
         divergence = _curVelX[RIGHT(index)] + _curVelY[UP(index)] - _curVelX[index] - _curVelY[index];
-        float correction = 0.01 * divergence / neighboursNum;
+        float correction = 1.9 * divergence / neighboursNum;
 
         // divergence > 0, out not enough, so more out
         // divergence < 0, out too much, so less out

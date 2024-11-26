@@ -57,9 +57,8 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool densityEnable = false;
-bool velocityAdvectEnable = false;
-bool velocityProjectEnable = false;
+bool EnableAdvect = false;
+bool EnableProject = false;
 
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
@@ -120,13 +119,19 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
             // dispatch advect compute shader
-            velocity->dispatch(ProgramType::advect, 0);
+            if (EnableAdvect)
+            {
+                velocity->dispatch(ProgramType::advect, 0);
 
-            swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
-            swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
+                swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
+                swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
+            }
 
             // dispatch project compute shader
-            // velocity->dispatch(ProgramType::project, 0);
+            if (EnableProject)
+            {
+                velocity->dispatch(ProgramType::project, 0);
+            }
 
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
@@ -165,7 +170,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         velocity->updateUniforms(UniformType::mousePosX, x);
                         velocity->updateUniforms(UniformType::mousePosY, y);
                         velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
-                        // the origin is in the top left
+                        //  the origin is in the top left
                         velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
 
                         // for calculating the velocity dir of the mouse
@@ -180,7 +185,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         swap(velocity->getBufferHandle(BufferType::prevVelY),
                              velocity->getBufferHandle(BufferType::curVelY));
 
-                        // velocity->dispatch(ProgramType::advect, 0);
                         //  Debug info
                         std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
@@ -197,7 +201,20 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     {
                         std::cout << "Reset the program" << std::endl;
                         velocity->dispatch(ProgramType::reset, 0);
+                        EnableAdvect = false;
+                        EnableProject = false;
                     }
+
+                    if (_event.keyboard.key == GLFW_KEY_A)
+                    {
+                        EnableAdvect = true;
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_P)
+                    {
+                        EnableProject = true;
+                    }
+
                     break;
 
                 case GLEQ_KEY_RELEASED:

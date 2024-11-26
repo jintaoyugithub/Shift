@@ -13,7 +13,7 @@ VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
     _uParams.mousePosY = 3.40e+38;
     _uParams.mouseVelX = 0.0f;
     _uParams.mouseVelY = 0.0f;
-    _uParams.radius = 5.0f;
+    _uParams.radius = 10.0f;
     _uParams.simResX = float(_width);
     _uParams.simResY = float(_height);
     _uParams.simResZ = 1.0f;
@@ -84,7 +84,7 @@ void VelocityField::AddSource(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
     // might need to change the access????
-    bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
+    bgfx::setBuffer(4, _isFluid, bgfx::Access::Write);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
     bgfx::dispatch(_viewID, _csAddSource, _groupSizeX, _groupSizeY, _groupSizeZ);
 }

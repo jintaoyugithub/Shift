@@ -27,6 +27,9 @@ void main() {
 
     _curVelX[index] = uMouseVelX * speedDeltaTime;
     _curVelY[index] = uMouseVelY * speedDeltaTime;
+
+    //_curVelX[index] = uMouseVelX * (uRadius - dis);
+    //_curVelY[index] = uMouseVelY * (uRadius - dis);
     _isFluid[index] = 0.0;
   }
 }

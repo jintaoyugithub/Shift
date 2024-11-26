@@ -70,7 +70,8 @@ float InterpolateCurVelY(uvec2 pos, uint index) {
   float velY_br = _prevVelY[index];
   float velY_bl = hasLeft ? _prevVelY[LEFT(index)] : 0.0;
   float velY_tl = (hasLeft && hasUp) ? _prevVelY[UP(LEFT(index))] : 0.0;
-  float velY_tr = _prevVelY[UP(index)];
+  // wrong: float velY_tr = _prevVelY[UP(index)];
+  float velY_tr = hasUp ? _prevVelY[UP(index)] : 0.0;
 
   return  (velY_br + velY_bl + velY_tl + velY_tr) / 4;
 }
@@ -125,39 +126,43 @@ float InterpolatePrevVelY(vec2 pos) {
 }
 
 void AdvectVelX(uvec2 pos, uint index) {
-  // calculate the current velocity
-  float curVelY = InterpolateCurVelY(pos, index); 
-  vec2 curVel = vec2(_prevVelX[index], curVelY);
-  // calculate the previous position during deltatime
-  vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
-  // calculate previous velocity X
-  float prevVelX = InterpolatePrevVelX(prevPos);
-  // and set to the current velcity X
-  _curVelX[index] = prevVelX;
+  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
+    && _isFluid[index] == 1 && _isFluid[LEFT(index)] == 1) {
+      // calculate the current velocity
+      float curVelY = InterpolateCurVelY(pos, index); 
+      vec2 curVel = vec2(_prevVelX[index], curVelY);
+      // calculate the previous position during deltatime
+      vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
+      // calculate previous velocity X
+      float prevVelX = InterpolatePrevVelX(prevPos);
+      // and set to the current velcity X
+      _curVelX[index] = prevVelX;
+  } else {
+      _curVelX[index] = _prevVelX[index];
+  }
 }
 
 void AdvectVelY(uvec2 pos, uint index) {
-  // same as how to advect velocity X
-  float curVelX = InterpolateCurVelX(pos, index); 
-  vec2 curVel = vec2(curVelX, _prevVelY[index]);
-  vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
-  float prevVelY = InterpolatePrevVelY(prevPos);
-  _curVelY[index] = prevVelY;
+  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
+    && _isFluid[index] == 1 && _isFluid[DOWN(index)] == 1) {
+      // same as how to advect velocity X
+      float curVelX = InterpolateCurVelX(pos, index); 
+      vec2 curVel = vec2(curVelX, _prevVelY[index]);
+      vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
+      float prevVelY = InterpolatePrevVelY(prevPos);
+      _curVelY[index] = prevVelY;
+    } else {
+      _curVelY[index] = _prevVelY[index];
+    }
 }
 
 NUM_THREADS(8, 8, 1)
 void main() {
   // interpolate the velocity of the gaps first
   uvec2 pos = gl_GlobalInvocationID.xy;
-  uint index = Index2D(pos.x, pos.y, uSimResX);
+  if(pos.x >= uint(uSimResX) || pos.y >= uint(uSimResY)) return;
 
-  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY -1)) {
-    if(_isFluid[index] == 1) {
-      AdvectVelX(pos, index);
-      AdvectVelY(pos, index);
-    }
-    } else {
-      _curVelX[index] = _prevVelX[index];
-      _curVelY[index] = _prevVelY[index];
-    }
+  uint index = Index2D(pos.x, pos.y, uSimResX);
+  AdvectVelX(pos, index);
+  AdvectVelY(pos, index);
 }

@@ -57,8 +57,8 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool EnableAdvect = false;
-bool EnableProject = false;
+bool EnableAdvect = true;
+bool EnableProject = true;
 
 class ExampleFluidSim : public shift::AppBaseGLFW
 {

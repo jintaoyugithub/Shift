@@ -129,6 +129,20 @@ void main() {
       //gl_FragColor = vec4(0.0, colorX, colorY, 1.0);
       //
 
-      gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+      if(_curVelX[index] == 0 && _curVelY[index] == 0) {
+        gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+        return;
+      }
+      vec2 velDir = vec2(_curVelX[index], _curVelY[index]);
+      float angle = dir2Angle(velDir.y, velDir.x);
+      float speed = length(velDir);
+
+      float H = angle;
+      float S = min(speed / 10.0f, 1.0f);
+      float V = min(speed / 10.0f, 1.0f);
+
+      vec3 color = HSVtoRGB(H, 1.0, 1.0);
+
+      gl_FragColor = vec4(color, 1.0);
     }
 }

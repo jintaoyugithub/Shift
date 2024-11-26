@@ -54,6 +54,11 @@
 
 - [ ] Imgui window and glfw window can not communicate, which means they are not in the same context
 
+### 2024.11.26
+
+- [ ] 流体模拟在经过advect之后，会导致全局的velocity field都朝向左下角，也就是x负，y正（向右为x正，向下为y正）
+- [ ] project的correction太大会导致整个velocity field非常混乱
+
 ```cpp
 curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
 // or

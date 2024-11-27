@@ -10,7 +10,7 @@ constexpr int kThreadGroupSizeZ = 8;
 
 inline void swap(bgfx::DynamicVertexBufferHandle &prev, bgfx::DynamicVertexBufferHandle &cur)
 {
-    bgfx::DynamicVertexBufferHandle temp = cur;
+    bgfx::DynamicVertexBufferHandle temp = prev;
     prev = cur;
     cur = temp;
 }

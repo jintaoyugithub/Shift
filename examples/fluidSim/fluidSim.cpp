@@ -57,7 +57,7 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool EnableAdvect = false;
+bool EnableAdvect = true;
 bool EnableProject = true;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
@@ -121,11 +121,13 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
+            swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
+            swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
+
             // dispatch advect compute shader
             if (EnableAdvect)
             {
                 velocity->dispatch(ProgramType::advect, 0);
-
                 swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
                 swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
             }
@@ -189,12 +191,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // update uniforms
                         velocity->updateUniforms(UniformType::mousePosX, x);
                         velocity->updateUniforms(UniformType::mousePosY, y);
-                        // velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
+                        velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
                         //    the origin is in the top left
-                        // velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
+                        velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
 
-                        velocity->updateUniforms(UniformType::mouseVelX, 1.0);
-                        velocity->updateUniforms(UniformType::mouseVelY, 0.0);
+                        // velocity->updateUniforms(UniformType::mouseVelX, 1.0);
+                        // velocity->updateUniforms(UniformType::mouseVelY, 0.0);
 
                         // for calculating the velocity dir of the mouse
                         lastMousePosX = _event.pos.x;
@@ -203,10 +205,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // dispatch shader
                         velocity->dispatch(ProgramType::addSource, 0);
 
-                        swap(velocity->getBufferHandle(BufferType::prevVelX),
-                             velocity->getBufferHandle(BufferType::curVelX));
-                        swap(velocity->getBufferHandle(BufferType::prevVelY),
-                             velocity->getBufferHandle(BufferType::curVelY));
+                        // std::cout << 'test' << std::endl;
+
+                        // swap(velocity->getBufferHandle(BufferType::prevVelX),
+                        //      velocity->getBufferHandle(BufferType::curVelX));
+                        // swap(velocity->getBufferHandle(BufferType::prevVelY),
+                        //      velocity->getBufferHandle(BufferType::curVelY));
+
+                        // std::cout << 'test' << std::endl;
 
                         //  Debug info
                         // std::cout << velDir.x << " " << velDir.y << std::endl;

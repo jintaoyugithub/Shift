@@ -58,7 +58,6 @@ float InterpolateCurVelX(uvec2 pos, uint index) {
   float velX_br = (hasRight && hasDown) ? _prevVelX[DOWN(RIGHT(index))] : 0.0;
 
   return (velX_tl + velX_tr + velX_bl + velX_br) / 4;
-        
 }
 
 float InterpolateCurVelY(uvec2 pos, uint index) {

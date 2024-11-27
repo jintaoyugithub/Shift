@@ -137,7 +137,7 @@ void VelocityField::Project(int _viewID)
                 bgfx::setBuffer(0, _curVelX, bgfx::Access::ReadWrite);
                 bgfx::setBuffer(1, _curVelY, bgfx::Access::ReadWrite);
                 bgfx::setBuffer(2, _isFluid, bgfx::Access::Read);
-                bgfx::setBuffer(3, _divergence, bgfx::Access::Read);
+                bgfx::setBuffer(3, _divergence, bgfx::Access::Write);
                 bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
                 bgfx::dispatch(_viewID, _csProject, _groupSizeX, _groupSizeY, _groupSizeZ);
             }

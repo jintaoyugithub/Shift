@@ -189,12 +189,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         // update uniforms
                         velocity->updateUniforms(UniformType::mousePosX, x);
                         velocity->updateUniforms(UniformType::mousePosY, y);
-                        velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
-                        //   the origin is in the top left
-                        velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
+                        // velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
+                        //    the origin is in the top left
+                        // velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
 
-                        // velocity->updateUniforms(UniformType::mouseVelX, 0.0);
-                        // velocity->updateUniforms(UniformType::mouseVelY, 1.0);
+                        velocity->updateUniforms(UniformType::mouseVelX, 1.0);
+                        velocity->updateUniforms(UniformType::mouseVelY, 0.0);
 
                         // for calculating the velocity dir of the mouse
                         lastMousePosX = _event.pos.x;
@@ -224,8 +224,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     {
                         std::cout << "Reset the program" << std::endl;
                         velocity->dispatch(ProgramType::reset, 0);
-                        //EnableAdvect = false;
-                        //EnableProject = false;
+                        // EnableAdvect = false;
+                        // EnableProject = false;
                     }
 
                     if (_event.keyboard.key == GLFW_KEY_A)

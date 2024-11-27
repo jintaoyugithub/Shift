@@ -13,7 +13,7 @@ void main() {
   uint index = Index2D(pos.x, pos.y, uSimResX);
 
   // calculate the distance from the current cell to the mouse position
-  float dis = distance(pos, vec2(uMousePosX, uSimResY - uMousePosY));
+  float dis = distance(pos, vec2(uint(uMousePosX), uint(uSimResY) - uint(uMousePosY)));
 
   if(dis < uRadius) {
     //_curVelX[index] += uMouseVelX * speedDeltaTime  + _prevVelX[index];

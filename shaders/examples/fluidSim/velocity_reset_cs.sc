@@ -18,11 +18,11 @@ void main() {
     _curVelX[index] = 0.0;
     _curVelY[index] = 0.0;
 
+    // boundary
+    _isFluid[index] = -1.0;
+
     // determine if the current grid is inside the sim area
     if(pos.x > 0 && pos.y > 0 && pos.x < uSimResX - 1 && pos.y < uSimResY - 1) {
         _isFluid[index] = 1.0;
-        return;
     }
-
-    _isFluid[index] = 0.0;
 }

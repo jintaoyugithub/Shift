@@ -9,7 +9,10 @@ enum ProgramType
     reset,
     addSource,
     advect,
-    project
+    project,
+    dispDivergence,
+    dispAdvect,
+    dispProject,
 };
 
 enum BufferType
@@ -19,6 +22,7 @@ enum BufferType
     curVelX,
     curVelY,
     isFluid,
+    divergence,
 };
 
 struct uParams
@@ -75,6 +79,9 @@ class VelocityField
     void AddSource(int _viewID);
     void Advect(int _viewID);
     void Project(int _viewID);
+    void DispDiv(int _viewID);
+    void DispAdvect(int _viewID);
+    void DispProject(int _viewID);
 
   public:
     VelocityField(int _width, int _height, float _dt, float _speed);
@@ -98,6 +105,15 @@ class VelocityField
         case ProgramType::project:
             Project(_viewID);
             break;
+        case ProgramType::dispProject:
+            DispProject(_viewID);
+            break;
+        case ProgramType::dispAdvect:
+            DispAdvect(_viewID);
+            break;
+        case ProgramType::dispDivergence:
+            DispDiv(_viewID);
+            break;
         }
     }
 
@@ -120,6 +136,9 @@ class VelocityField
         case BufferType::isFluid:
             return _isFluid;
             break;
+        case BufferType::divergence:
+            return _divergence;
+            break;
         }
     }
 
@@ -138,6 +157,15 @@ class VelocityField
             break;
         case ProgramType::project:
             return _csProject;
+            break;
+        case ProgramType::dispAdvect:
+            return _dispAdvect;
+            break;
+        case ProgramType::dispDivergence:
+            return _dispDivergence;
+            break;
+        case ProgramType::dispProject:
+            return _dispProject;
             break;
         }
         return BGFX_INVALID_HANDLE;
@@ -207,9 +235,15 @@ class VelocityField
     bgfx::DynamicVertexBufferHandle _curVelY;
     // this buffer is to set boundary or obstacles in the fluid sim area
     bgfx::DynamicVertexBufferHandle _isFluid;
+    bgfx::DynamicVertexBufferHandle _divergence;
 
     bgfx::ProgramHandle _csReset;
     bgfx::ProgramHandle _csAddSource;
     bgfx::ProgramHandle _csAdvect;
     bgfx::ProgramHandle _csProject;
+
+    // for debug
+    bgfx::ProgramHandle _dispDivergence;
+    bgfx::ProgramHandle _dispAdvect;
+    bgfx::ProgramHandle _dispProject;
 };

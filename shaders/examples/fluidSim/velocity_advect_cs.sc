@@ -160,7 +160,7 @@ NUM_THREADS(8, 8, 1)
 void main() {
   // interpolate the velocity of the gaps first
   uvec2 pos = gl_GlobalInvocationID.xy;
-  if(pos.x >= uint(uSimResX) || pos.y >= uint(uSimResY)) return;
+  if(pos.x <=0 || pos.y <= 0 || pos.x >= uint(uSimResX-1) || pos.y >= uint(uSimResY-1)) return;
 
   uint index = Index2D(pos.x, pos.y, uSimResX);
   AdvectVelX(pos, index);

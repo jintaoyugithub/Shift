@@ -44,12 +44,17 @@ VelocityField::VelocityField(int _width, int _height, float _dt, float _speed)
                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
     _isFluid = bgfx::createDynamicVertexBuffer(_uParams.simResX * _uParams.simResY * _uParams.simResZ, bufferLayout,
                                                BGFX_BUFFER_COMPUTE_READ_WRITE);
+    _divergence = bgfx::createDynamicVertexBuffer(_uParams.simResX * _uParams.simResY * _uParams.simResZ, bufferLayout,
+                                                  BGFX_BUFFER_COMPUTE_READ_WRITE);
 
     // init compute shaders
     _csReset = shift::loadProgram({"velocity_reset_cs.sc"});
     _csAddSource = shift::loadProgram({"velocity_addSource_cs.sc"});
     _csAdvect = shift::loadProgram({"velocity_advect_cs.sc"});
     _csProject = shift::loadProgram({"velocity_project_cs.sc"});
+    _dispDivergence = shift::loadProgram({"quad_vs.sc", "quad_divergence_fs.sc"});
+    _dispAdvect = shift::loadProgram({"quad_vs.sc", "quad_advect_fs.sc"});
+    _dispProject = shift::loadProgram({"quad_vs.sc", "quad_project_fs.sc"});
 }
 
 VelocityField::~VelocityField()
@@ -132,9 +137,47 @@ void VelocityField::Project(int _viewID)
                 bgfx::setBuffer(0, _curVelX, bgfx::Access::ReadWrite);
                 bgfx::setBuffer(1, _curVelY, bgfx::Access::ReadWrite);
                 bgfx::setBuffer(2, _isFluid, bgfx::Access::Read);
+                bgfx::setBuffer(3, _divergence, bgfx::Access::Read);
                 bgfx::setUniform(_uhParams, &_uParams, int(UniformType::count / 4) + 1);
                 bgfx::dispatch(_viewID, _csProject, _groupSizeX, _groupSizeY, _groupSizeZ);
             }
         }
     }
+}
+
+void VelocityField::DispDiv(int _viewID)
+{
+    /* the vertex buffer and index buffer are set outside */
+
+    // set compute buffer
+    bgfx::setBuffer(0, _divergence, bgfx::Access::Read);
+    bgfx::setBuffer(1, _isFluid, bgfx::Access::Read);
+
+    // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(_viewID, _dispDivergence);
+}
+
+void VelocityField::DispAdvect(int _viewID)
+{
+    // set compute buffer
+    bgfx::setBuffer(0, _isFluid, bgfx::Access::Read);
+    bgfx::setBuffer(1, _curVelX, bgfx::Access::Read);
+    bgfx::setBuffer(2, _curVelY, bgfx::Access::Read);
+
+    // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(_viewID, _dispAdvect);
+}
+
+void VelocityField::DispProject(int _viewID)
+{
+    // set compute buffer
+    bgfx::setBuffer(0, _isFluid, bgfx::Access::Read);
+    bgfx::setBuffer(1, _curVelX, bgfx::Access::Read);
+    bgfx::setBuffer(2, _curVelY, bgfx::Access::Read);
+
+    // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(_viewID, _dispProject);
 }

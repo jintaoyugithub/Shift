@@ -53,9 +53,10 @@ float dir2Angle(float x, float y) {
 void main() {
 	int index = int(gl_FragCoord.x) + bufferSize * int(gl_FragCoord.y);
 
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
-
     if(_isFluid[index] == 0) {
+      gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
+
+    } else if(_isFluid[index] == 1) {
       if (abs(_curVelX[index]) < 1e-5 && abs(_curVelY[index]) < 1e-5) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
       } else {
@@ -71,9 +72,7 @@ void main() {
 
         gl_FragColor = vec4(color, 1.0);
       }
-    } else if(_isFluid[index] == -1) {
-        gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0);
     } else {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+      gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
 }

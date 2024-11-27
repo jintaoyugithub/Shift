@@ -57,8 +57,11 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool EnableAdvect = true;
+bool EnableAdvect = false;
 bool EnableProject = true;
+bool DebugDispDiv = false;
+bool DebugDispProject = false;
+bool DebugDispAdvect = false;
 
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
@@ -88,7 +91,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 50.0f);
+            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 75.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -136,12 +139,29 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             /* Quad rendering */
             bgfx::setVertexBuffer(0, _vbhQuad);
             bgfx::setIndexBuffer(_ibhQuad);
-            bgfx::setBuffer(0, velocity->getBufferHandle(BufferType::isFluid), bgfx::Access::Read);
-            bgfx::setBuffer(1, velocity->getBufferHandle(BufferType::curVelX), bgfx::Access::Read);
-            bgfx::setBuffer(2, velocity->getBufferHandle(BufferType::curVelY), bgfx::Access::Read);
-            // check https://bkaradzic.github.io/bgfx/bgfx.html#_CPPv4N4bgfx7Encoder8setStateE8uint64_t8uint32_t
-            bgfx::setState(BGFX_STATE_DEFAULT);
-            bgfx::submit(0, _quadProgram);
+
+            if (DebugDispDiv)
+            {
+                velocity->dispatch(ProgramType::dispDivergence, 0);
+            }
+            else if (DebugDispAdvect)
+            {
+                velocity->dispatch(ProgramType::dispAdvect, 0);
+            }
+            else if (DebugDispProject)
+            {
+                velocity->dispatch(ProgramType::dispProject, 0);
+            }
+            else
+            {
+                // disp density
+                bgfx::setBuffer(0, velocity->getBufferHandle(BufferType::isFluid), bgfx::Access::Read);
+                bgfx::setBuffer(1, velocity->getBufferHandle(BufferType::curVelX), bgfx::Access::Read);
+                bgfx::setBuffer(2, velocity->getBufferHandle(BufferType::curVelY), bgfx::Access::Read);
+
+                bgfx::setState(BGFX_STATE_DEFAULT);
+                bgfx::submit(0, _quadProgram);
+            }
 
             bgfx::frame();
 
@@ -170,8 +190,11 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         velocity->updateUniforms(UniformType::mousePosX, x);
                         velocity->updateUniforms(UniformType::mousePosY, y);
                         velocity->updateUniforms(UniformType::mouseVelX, velDir.x);
-                        //  the origin is in the top left
+                        //   the origin is in the top left
                         velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
+
+                        // velocity->updateUniforms(UniformType::mouseVelX, 0.0);
+                        // velocity->updateUniforms(UniformType::mouseVelY, 1.0);
 
                         // for calculating the velocity dir of the mouse
                         lastMousePosX = _event.pos.x;
@@ -186,7 +209,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                              velocity->getBufferHandle(BufferType::curVelY));
 
                         //  Debug info
-                        std::cout << velDir.x << " " << velDir.y << std::endl;
+                        // std::cout << velDir.x << " " << velDir.y << std::endl;
                     }
                     break;
                 }
@@ -201,8 +224,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     {
                         std::cout << "Reset the program" << std::endl;
                         velocity->dispatch(ProgramType::reset, 0);
-                        EnableAdvect = false;
-                        EnableProject = false;
+                        //EnableAdvect = false;
+                        //EnableProject = false;
                     }
 
                     if (_event.keyboard.key == GLFW_KEY_A)
@@ -213,6 +236,34 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     if (_event.keyboard.key == GLFW_KEY_P)
                     {
                         EnableProject = true;
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_1)
+                    {
+                        DebugDispDiv = true;
+                        DebugDispProject = false;
+                        DebugDispAdvect = false;
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_2)
+                    {
+                        DebugDispProject = true;
+                        DebugDispDiv = false;
+                        DebugDispAdvect = false;
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_3)
+                    {
+                        DebugDispAdvect = true;
+                        DebugDispProject = false;
+                        DebugDispDiv = false;
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_0)
+                    {
+                        DebugDispAdvect = false;
+                        DebugDispProject = false;
+                        DebugDispDiv = false;
                     }
 
                     break;

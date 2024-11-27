@@ -58,7 +58,7 @@
 
 - [ ] 流体模拟在经过advect之后，会导致全局的velocity field都朝向左下角，也就是x负，y正（向右为x正，向下为y正）
 - [ ] project的correction太大会导致整个velocity field非常混乱
-
+- [ ] 右和上边界是有问题的
 ```cpp
 curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
 // or

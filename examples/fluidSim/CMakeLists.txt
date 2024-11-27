@@ -12,6 +12,25 @@ bgfx_compile_shaders(
   VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
   OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
 
+# compile all fragment shaders
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_divergence_fs.sc"
+  VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
+  OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_advect_fs.sc"
+  VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
+  OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_project_fs.sc"
+  VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
+  OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+
 # compile all compute shaders
 bgfx_compile_shaders(
   TYPE COMPUTE 
@@ -42,6 +61,9 @@ add_executable(
   # include all the shader files
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_advect_fs.sc"
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_project_fs.sc"
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_divergence_fs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_reset_cs.sc" 
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_addSource_cs.sc" 
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/velocity_advect_cs.sc" 

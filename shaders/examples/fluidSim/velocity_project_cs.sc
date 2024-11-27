@@ -4,6 +4,7 @@
 BUFFER_RW(_curVelX, float, 0);
 BUFFER_RW(_curVelY, float, 1);
 BUFFER_RO(_isFluid, float, 2);
+BUFFER_WO(_divergence, float, 3);
 
 NUM_THREADS(8, 8, 1)
 void main() {
@@ -13,10 +14,12 @@ void main() {
   pos.x = (pos.x << 1) + uint(uOffsetX);
   pos.y = (pos.y << 1) + uint(uOffsetY);
 
+  // if out of the boundray
+  if(pos.x <= 0 || pos.y <= 0 || pos.x >= uint(uSimResX-1) || pos.y >= uint(uSimResY-1)) return;
+
   uint index = Index2D(pos.x, pos.y, uSimResX);
 
-  // if out of the boundray
-  if(pos.x > uint(uSimResX-1) || pos.y > uint(uSimResY-1)) return;
+  if(_isFluid[index] == 0 || _isFluid[index] == -1.0) return;
 
   float divergence = 0;
   if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY -1)) {
@@ -46,14 +49,23 @@ void main() {
 
         // divergence > 0, out not enough, so more out
         // divergence < 0, out too much, so less out
-        if(_isFluid[LEFT(index)] == 1) _curVelX[index] += correction;
-        if(_isFluid[DOWN(index)] == 1) _curVelY[index] += correction;
+        //if(_isFluid[LEFT(index)] == 1) _curVelX[index] += correction;
+        //if(_isFluid[DOWN(index)] == 1) _curVelY[index] += correction;
 
-        // divergence > 0, enter too much, so less enter
-        // divergence < 0, enter not enough, so more enter
-        if(_isFluid[RIGHT(index)] == 1) _curVelX[RIGHT(index)] -= correction;
-        if(_isFluid[UP(index)] == 1) _curVelY[UP(index)] -= correction;
+        //// divergence > 0, enter too much, so less enter
+        //// divergence < 0, enter not enough, so more enter
+        //if(_isFluid[RIGHT(index)] == 1) _curVelX[RIGHT(index)] -= correction;
+        //if(_isFluid[UP(index)] == 1) _curVelY[UP(index)] -= correction;
+
+        _curVelX[index] += correction;
+        _curVelY[index] += correction;
+
+        _curVelX[RIGHT(index)] -= correction;
+        _curVelY[UP(index)] -= correction;
       }
     }
   }
+
+  // record the divergence
+  _divergence[index] = divergence;
 }

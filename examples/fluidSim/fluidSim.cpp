@@ -57,8 +57,8 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool EnableAdvect = true;
-bool EnableProject = true;
+bool EnableAdvect = false;
+bool EnableProject = false;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
 bool DebugDispAdvect = false;
@@ -121,15 +121,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
-            swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
-            swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
-
             // dispatch advect compute shader
             if (EnableAdvect)
             {
-                velocity->dispatch(ProgramType::advect, 0);
                 swap(velocity->getBufferHandle(BufferType::prevVelX), velocity->getBufferHandle(BufferType::curVelX));
                 swap(velocity->getBufferHandle(BufferType::prevVelY), velocity->getBufferHandle(BufferType::curVelY));
+                velocity->dispatch(ProgramType::advect, 0);
             }
 
             // dispatch project compute shader

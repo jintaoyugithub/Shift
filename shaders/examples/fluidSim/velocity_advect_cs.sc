@@ -101,6 +101,7 @@ float InterpolatePrevVelX(vec2 pos) {
   return velX;
 }
 
+
 float InterpolatePrevVelY(vec2 pos) {
   uvec2 upos = uvec2(pos.x, pos.y);
   vec2 lambda = pos - upos;
@@ -124,6 +125,61 @@ float InterpolatePrevVelY(vec2 pos) {
   return velY;
 }
 
+
+// To calculate x and y, it's different
+// for x, it look into the down and right
+float InterpolatePrevVelXNew(vec2 pos) {
+  uvec2 upos = uvec2(pos.x, pos.y);
+  vec2 lambda = pos - upos;
+  uint index = Index2D(upos.x, upos.y, uSimResX);
+
+  vec2 oneMinsLambda = vec2(1.0,1.0) - lambda;
+  // why we dont use isFluid?
+  // Becaus the pos here is curPos - deltaTime * curVel, 
+  // it may exceed the sim area
+  bool hasLeft = pos.x > 0;
+  bool hasRight = pos.x < uSimResX-1;
+  bool hasDown = pos.y > 0;
+  bool hasUp = pos.y < uSimResY-1;
+
+  float velX_tr = hasRight ? _prevVelX[RIGHT(index)] : 0.0;
+  float velX_tl = _prevVelX[index];
+  float velX_bl = hasDown ? _prevVelX[DOWN(index)] : 0.0;
+  float velX_br = (hasDown && hasRight) ? _prevVelX[DOWN(RIGHT(index))] : 0.0;
+
+  float top = oneMinsLambda.x * velX_tl + lambda.x * velX_tr;
+  float bottom = oneMinsLambda.x * velX_bl + lambda.x * velX_br;
+
+  //float velX = oneMinsLambda.y * bottom + lambda.y * top;
+  float velX = oneMinsLambda.y * top + lambda.y * bottom;
+  return velX;
+}
+
+
+// for y, it looks into the up and left
+float InterpolatePrevVelYNew(vec2 pos) {
+  uvec2 upos = uvec2(pos.x, pos.y);
+  vec2 lambda = pos - upos;
+  uint index = Index2D(upos.x, upos.y, uSimResX);
+
+  vec2 oneMinsLambda = vec2(1.0,1.0) - lambda;
+  bool hasLeft = pos.x > 0;
+  bool hasRight = pos.x < uSimResX-1;
+  bool hasDown = pos.y > 0;
+  bool hasUp = pos.y < uSimResY-1;
+
+  float velY_tr = hasUp ? _prevVelY[UP(index)] : 0.0;
+  float velY_tl = (hasLeft && hasUp) ? _prevVelY[UP(LEFT(index))] : 0.0;
+  float velY_bl = hasLeft ? _prevVelY[LEFT(index)] : 0.0;
+  float velY_br = _prevVelY[index];
+
+  float top = oneMinsLambda.x * velY_tr + lambda.x * velY_tl;
+  float bottom = oneMinsLambda.x * velY_br + lambda.x * velY_bl;
+
+  float velY = oneMinsLambda.y * bottom + lambda.y * top;
+  return velY;
+}
+
 void AdvectVelX(uvec2 pos, uint index) {
   if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
     && _isFluid[index] == 1 && _isFluid[LEFT(index)] == 1) {
@@ -133,7 +189,7 @@ void AdvectVelX(uvec2 pos, uint index) {
       // calculate the previous position during deltatime
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
       // calculate previous velocity X
-      float prevVelX = InterpolatePrevVelX(prevPos);
+      float prevVelX = InterpolatePrevVelXNew(prevPos);
       // and set to the current velcity X
       _curVelX[index] = prevVelX;
   } else {
@@ -148,7 +204,7 @@ void AdvectVelY(uvec2 pos, uint index) {
       float curVelX = InterpolateCurVelX(pos, index); 
       vec2 curVel = vec2(curVelX, _prevVelY[index]);
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
-      float prevVelY = InterpolatePrevVelY(prevPos);
+      float prevVelY = InterpolatePrevVelYNew(prevPos);
       _curVelY[index] = prevVelY;
     } else {
       _curVelY[index] = _prevVelY[index];

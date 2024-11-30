@@ -26,8 +26,10 @@ vec4 DebugDispDiv(float div, float isFluid) {
   vec4 color = vec4(0.5, 0.1, 0.7, 1.0);
 
   if(isFluid == 1) {
+    // too much inflow
     if(div < 0) {
       color = vec4(0.0, -div*100, 0.0, 1.0);
+    // too much outflow
     } else if(div > 0) {
       color = vec4(div*100, 0.0, 0.0, 1.0);
     } else {

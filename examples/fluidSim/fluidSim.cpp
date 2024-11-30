@@ -57,8 +57,8 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
-bool EnableAdvect = false;
-bool EnableProject = false;
+bool EnableAdvect = true;
+bool EnableProject = true;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
 bool DebugDispAdvect = false;
@@ -192,8 +192,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         //    the origin is in the top left
                         velocity->updateUniforms(UniformType::mouseVelY, -velDir.y);
 
-                        // velocity->updateUniforms(UniformType::mouseVelX, 1.0);
-                        // velocity->updateUniforms(UniformType::mouseVelY, 0.0);
+                        //velocity->updateUniforms(UniformType::mouseVelX, 1.0);
+                        //velocity->updateUniforms(UniformType::mouseVelY, 0.0);
 
                         // for calculating the velocity dir of the mouse
                         lastMousePosX = _event.pos.x;

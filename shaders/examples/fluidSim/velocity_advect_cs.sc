@@ -118,8 +118,8 @@ float InterpolatePrevVelY(vec2 pos) {
   float velY_bl = hasRight? _prevVelY[(RIGHT(index))] : 0.0;
   float velY_br = _prevVelY[index];
 
-  float top = oneMinsLambda.x * velY_tl + lambda.x * velY_tr;
-  float bottom = oneMinsLambda.x * velY_bl + oneMinsLambda.x * velY_br;
+  float top = oneMinsLambda.x * velY_tr + lambda.x * velY_tl;
+  float bottom = oneMinsLambda.x * velY_br + oneMinsLambda.x * velY_bl;
 
   float velY = oneMinsLambda.y * bottom + lambda.y * top;
   return velY;

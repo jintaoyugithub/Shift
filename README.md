@@ -43,12 +43,18 @@
 
 `Posible solution`: reset the mouse pos which sent to the compute shader to 0 or somevalue after click, 因为这样就不会导致传给compute shader的鼠标位置的值一直固定在我松开鼠标的那个位置。
 
-- [ ] The function `VelocityProject` display black right now
+- [x] The function `VelocityProject` display black right now
 
 ### 2024.11.20
 
 - [ ] 我现在通过一个`radius`的变量来控制add velocity的范围，如何让鼠标活动影响的程度从重心向radius减小？
 - [ ] 而且对于速度场来说，在增加速度场的时候，需要使用`+=` 吗？For example
+
+```cpp
+curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
+// or
+curVelocityField[index] = vec2(xVel, yVel); 
+```
 
 ### 2024.11.21
 
@@ -56,14 +62,9 @@
 
 ### 2024.11.26
 
-- [ ] 流体模拟在经过advect之后，会导致全局的velocity field都朝向左下角，也就是x负，y正（向右为x正，向下为y正）
-- [ ] project的correction太大会导致整个velocity field非常混乱
-- [ ] 右和上边界是有问题的
-```cpp
-curVelocityField[index] += vec2(xVel, yVel) + prevVelocityField[index] * deltaTime;
-// or
-curVelocityField[index] = vec2(xVel, yVel); 
-```
+- [x] 流体模拟在经过advect之后，会导致全局的velocity field都朝向左下角，也就是x负，y正（向右为x正，向下为y正）
+- [x] project的correction太大会导致整个velocity field非常混乱
+- [x] 右和上边界是有问题的
 
 - [ ] May be I don't need diffuse, I just `add noise`, it can also save me some performance
 
@@ -74,6 +75,10 @@ add source -> project -> advect
 
 - For density
 add source -> add noise -> advect
+
+### 2024.11.27
+
+- [ ] advect的方向会往比正常方向偏左，检查一下advect中的函数
 
 
 ## Reminder

@@ -1,36 +1,39 @@
 #pragma once
 
-#include "bgfx/bgfx.h"
-#include "spirv-headers/include/spirv/unified1/spirv.hpp11"
 #include <utils/common.hpp>
 
 enum ProgramType
 {
-    reset,
-    addSource,
-    advect,
-    project,
-    dispDivergence,
-    dispAdvect,
-    dispProject,
+    Reset,
+    AddSource,
+    Advect,
+    Project,
+    DispDivergence,
+    DispAdvect,
+    DispProject,
 };
 
 enum BufferType
 {
-    prevVelX,
-    prevVelY,
-    curVelX,
-    curVelY,
-    isFluid,
-    divergence,
+    PrevVelX,
+    PrevVelY,
+    PrevVelZ,
+    CurVelX,
+    CurVelY,
+    CurVelZ,
+    IsFluid,
+    Divergence,
 };
 
 struct uParams
 {
-    float mousePosX;
-    float mousePosY;
-    float mouseVelX;
-    float mouseVelY;
+    float interPosX;
+    float interPosY;
+    float interPosZ;
+
+    float interVelX;
+    float interVelY;
+    float interVelZ;
 
     float radius;
 
@@ -38,81 +41,69 @@ struct uParams
     float simResY;
     float simResZ;
 
-    float persist;
-
     float deltaTime;
     float speed;
 
     // these offsets are used for staggering the clearing of the divergence for the corresponding cell
-    float offsetX;
-    float offsetY;
+    float divOffsetX;
+    float divOffsetY;
+    float divOffsetZ;
 };
 
 enum UniformType
 {
-    mousePosX,
-    mousePosY,
-    mouseVelX,
-    mouseVelY,
+    InterPosX,
+    InterPosY,
+    InterPosZ,
 
-    radius,
+    InterVelX,
+    InterVelY,
+    InterVelZ,
 
-    simResX,
-    simResY,
-    simResZ,
+    Radius,
 
-    persist,
+    SimResX,
+    SimResY,
+    SimResZ,
 
-    deltaTime,
-    speed,
+    DeltaTime,
+    Speed,
 
-    offsetX,
-    offsetY,
+    DivOffsetX,
+    DivOffsetY,
+    DivOffsetZ,
 
-    count,
+    Count,
 };
 
 class VelocityField
 {
-  private:
-    void Reset(int _viewID);
-    void AddSource(int _viewID);
-    void Advect(int _viewID);
-    void Project(int _viewID);
-    void DispDiv(int _viewID);
-    void DispAdvect(int _viewID);
-    void DispProject(int _viewID);
+  protected:
+    virtual void Reset(int _viewID);
+    virtual void AddSource(int _viewID);
+    virtual void Advect(int _viewID);
+    virtual void Project(int _viewID);
 
   public:
-    VelocityField(int _width, int _height, float _dt, float _speed);
-    // VelocityField();
-    ~VelocityField();
+    VelocityField(int simResX, int simResY, int simResZ);
+    virtual ~VelocityField();
 
   public:
     inline void dispatch(ProgramType _type, int _viewID)
     {
         switch (_type)
         {
-        case ProgramType::reset:
+        case ProgramType::Reset:
             Reset(_viewID);
             break;
-        case ProgramType::addSource:
+        case ProgramType::AddSource:
             AddSource(_viewID);
             break;
-        case ProgramType::advect:
+        case ProgramType::Advect:
             Advect(_viewID);
             break;
-        case ProgramType::project:
+        case ProgramType::Project:
             Project(_viewID);
-            break;
-        case ProgramType::dispProject:
-            DispProject(_viewID);
-            break;
-        case ProgramType::dispAdvect:
-            DispAdvect(_viewID);
-            break;
-        case ProgramType::dispDivergence:
-            DispDiv(_viewID);
             break;
         }
     }
@@ -121,22 +112,28 @@ class VelocityField
     {
         switch (_type)
         {
-        case BufferType::prevVelX:
+        case BufferType::PrevVelX:
             return _prevVelX;
             break;
-        case BufferType::prevVelY:
+        case BufferType::PrevVelY:
             return _prevVelY;
             break;
-        case BufferType::curVelX:
+        case BufferType::PrevVelZ:
+            return _prevVelY;
+            break;
+        case BufferType::CurVelX:
             return _curVelX;
             break;
-        case BufferType::curVelY:
+        case BufferType::CurVelY:
             return _curVelY;
             break;
-        case BufferType::isFluid:
+        case BufferType::CurVelZ:
+            return _curVelY;
+            break;
+        case BufferType::IsFluid:
             return _isFluid;
             break;
-        case BufferType::divergence:
+        case BufferType::Divergence:
             return _divergence;
             break;
         }
@@ -146,26 +143,17 @@ class VelocityField
     {
         switch (_type)
         {
-        case ProgramType::reset:
+        case ProgramType::Reset:
             return _csReset;
             break;
-        case ProgramType::addSource:
+        case ProgramType::AddSource:
             return _csAddSource;
             break;
-        case ProgramType::advect:
+        case ProgramType::Advect:
             return _csAdvect;
             break;
-        case ProgramType::project:
+        case ProgramType::Project:
             return _csProject;
-            break;
-        case ProgramType::dispAdvect:
-            return _dispAdvect;
-            break;
-        case ProgramType::dispDivergence:
-            return _dispDivergence;
-            break;
-        case ProgramType::dispProject:
-            return _dispProject;
             break;
         }
         return BGFX_INVALID_HANDLE;
@@ -175,44 +163,50 @@ class VelocityField
     {
         switch (_type)
         {
-        case UniformType::mousePosX:
-            _uParams.mousePosX = val;
+        case UniformType::InterPosX:
+            _uParams.interPosX = val;
             break;
-        case UniformType::mousePosY:
-            _uParams.mousePosY = val;
+        case UniformType::InterPosY:
+            _uParams.interPosY = val;
             break;
-        case UniformType::mouseVelX:
-            _uParams.mouseVelX = val;
+        case UniformType::InterPosZ:
+            _uParams.interPosZ = val;
             break;
-        case UniformType::mouseVelY:
-            _uParams.mouseVelY = val;
+        case UniformType::InterVelX:
+            _uParams.interVelX = val;
             break;
-        case UniformType::radius:
+        case UniformType::InterVelY:
+            _uParams.interVelY = val;
+            break;
+        case UniformType::InterVelZ:
+            _uParams.interVelZ = val;
+            break;
+        case UniformType::Radius:
             _uParams.radius = val;
             break;
-        case UniformType::simResX:
+        case UniformType::SimResX:
             _uParams.simResX = val;
             break;
-        case UniformType::simResY:
+        case UniformType::SimResY:
             _uParams.simResY = val;
             break;
-        case UniformType::simResZ:
+        case UniformType::SimResZ:
             _uParams.simResZ = val;
             break;
-        case UniformType::persist:
-            _uParams.persist = val;
-            break;
-        case UniformType::deltaTime:
+        case UniformType::DeltaTime:
             _uParams.deltaTime = val;
             break;
-        case UniformType::speed:
+        case UniformType::Speed:
             _uParams.speed = val;
             break;
-        case UniformType::offsetX:
-            _uParams.offsetX = val;
+        case UniformType::DivOffsetX:
+            _uParams.divOffsetX = val;
             break;
-        case UniformType::offsetY:
-            _uParams.offsetY = val;
+        case UniformType::DivOffsetY:
+            _uParams.divOffsetY = val;
+            break;
+        case UniformType::DivOffsetZ:
+            _uParams.divOffsetZ = val;
             break;
         }
     }
@@ -220,7 +214,8 @@ class VelocityField
   public:
     int solverItr = 50;
 
-  private:
+  protected:
+    // group size of compute shader
     int _groupSizeX;
     int _groupSizeY;
     int _groupSizeZ;
@@ -231,8 +226,12 @@ class VelocityField
     // buffers used in compute shader
     bgfx::DynamicVertexBufferHandle _prevVelX;
     bgfx::DynamicVertexBufferHandle _prevVelY;
+    bgfx::DynamicVertexBufferHandle _prevVelZ;
+
     bgfx::DynamicVertexBufferHandle _curVelX;
     bgfx::DynamicVertexBufferHandle _curVelY;
+    bgfx::DynamicVertexBufferHandle _curVelZ;
+
     // this buffer is to set boundary or obstacles in the fluid sim area
     bgfx::DynamicVertexBufferHandle _isFluid;
     bgfx::DynamicVertexBufferHandle _divergence;
@@ -241,9 +240,4 @@ class VelocityField
     bgfx::ProgramHandle _csAddSource;
     bgfx::ProgramHandle _csAdvect;
     bgfx::ProgramHandle _csProject;
-
-    // for debug
-    bgfx::ProgramHandle _dispDivergence;
-    bgfx::ProgramHandle _dispAdvect;
-    bgfx::ProgramHandle _dispProject;
 };

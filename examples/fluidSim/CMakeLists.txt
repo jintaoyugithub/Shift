@@ -1,15 +1,31 @@
 # compile all vertex shaders
+# quad
 bgfx_compile_shaders(
   TYPE VERTEX
   SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
   VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
   OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
 
+# cube
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_vs.sc"
+  VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_varying.def.sc"
+  OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+
 # compile all fragment shaders
+# quad 
 bgfx_compile_shaders(
   TYPE FRAGMENT
   SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"
   VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_varying.def.sc"
+  OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+
+# cube
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_fs.sc"
+  VARYING_DEF "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_varying.def.sc"
   OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
 
 # compile all fragment shaders
@@ -57,10 +73,14 @@ add_executable(
   fluidSim
   fluidSim.cpp
   velocityField.cpp
+  velocityFieldGrid.cpp
+  velocityFieldCube.cpp
 
   # include all the shader files
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_vs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_fs.sc"
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_vs.sc"
+  "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/cube_fs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_advect_fs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_project_fs.sc"
   "${CMAKE_SOURCE_DIR}/shaders/examples/fluidSim/quad_divergence_fs.sc"

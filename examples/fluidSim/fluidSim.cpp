@@ -8,7 +8,7 @@
 #include "fluidSimUtils.hpp"
 #include "gleq.hpp"
 #include "tinystl/buffer.h"
-#include "velocityField.hpp"
+#include "velocityFieldGrid.hpp"
 
 enum ViewportType
 {
@@ -91,7 +91,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityField(getWidth(), getHeight(), 0.02f, 75.0f);
+            velocity = new VelocityFieldGrid(getWidth(), getHeight(), 0.02f, 75.0f);
 
             velocity->dispatch(ProgramType::reset, 0);
         }
@@ -310,7 +310,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;
 
-    VelocityField *velocity;
+    VelocityFieldGrid *velocity;
 };
 
 int main(int _argc, const char **_argv)

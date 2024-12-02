@@ -162,3 +162,6 @@ I'm not sure why the frame rate in this project changes with the display's maxim
 
 You should update the shader, for example, add some comments, in order to make the `bgfx` rebuild the shader.
 
+9. When change some files that are not shader code and are included more than one file, for every shader that include that file, you should change that shader code a little bit to make sure recompile the shader again to apply the changeds.
+
+For example in the `fluid simulation shader folder`, there is a file call `velocity_uniforms.sh` which store all the definition of the uniforms, if you change that file, you need to add a tiny change, for instance **add a comment**, to make sure the shader will be recompiled.

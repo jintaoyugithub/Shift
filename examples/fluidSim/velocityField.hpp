@@ -8,9 +8,6 @@ enum ProgramType
     AddSource,
     Advect,
     Project,
-    DispDivergence,
-    DispAdvect,
-    DispProject,
 };
 
 enum BufferType
@@ -79,10 +76,10 @@ enum UniformType
 class VelocityField
 {
   protected:
-    virtual void Reset(int _viewID);
-    virtual void AddSource(int _viewID);
-    virtual void Advect(int _viewID);
-    virtual void Project(int _viewID);
+    virtual void Reset(int _viewID) {};
+    virtual void AddSource(int _viewID) {};
+    virtual void Advect(int _viewID) {};
+    virtual void Project(int _viewID) {};
 
   public:
     VelocityField(int simResX, int simResY, int simResZ);
@@ -119,7 +116,7 @@ class VelocityField
             return _prevVelY;
             break;
         case BufferType::PrevVelZ:
-            return _prevVelY;
+            return _prevVelZ;
             break;
         case BufferType::CurVelX:
             return _curVelX;
@@ -128,7 +125,7 @@ class VelocityField
             return _curVelY;
             break;
         case BufferType::CurVelZ:
-            return _curVelY;
+            return _curVelZ;
             break;
         case BufferType::IsFluid:
             return _isFluid;

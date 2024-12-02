@@ -8,6 +8,7 @@
 #include "fluidSimUtils.hpp"
 #include "gleq.hpp"
 #include "tinystl/buffer.h"
+#include "velocityFieldCube.hpp"
 #include "velocityFieldGrid.hpp"
 
 enum ViewportType
@@ -91,9 +92,10 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
-            velocity = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
+            velocityGrid = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
+            velocityCube = new VelocityFieldCube(getWidth(), getHeight(), 1.0f);
 
-            velocity->dispatch(ProgramType::Reset, 0);
+            velocityGrid->dispatch(ProgramType::Reset, 0);
         }
     }
 
@@ -124,15 +126,17 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             // dispatch advect compute shader
             if (EnableAdvect)
             {
-                swap(velocity->getBufferHandle(BufferType::PrevVelX), velocity->getBufferHandle(BufferType::CurVelX));
-                swap(velocity->getBufferHandle(BufferType::PrevVelY), velocity->getBufferHandle(BufferType::CurVelY));
-                velocity->dispatch(ProgramType::Advect, 0);
+                swap(velocityGrid->getBufferHandle(BufferType::PrevVelX),
+                     velocityGrid->getBufferHandle(BufferType::CurVelX));
+                swap(velocityGrid->getBufferHandle(BufferType::PrevVelY),
+                     velocityGrid->getBufferHandle(BufferType::CurVelY));
+                velocityGrid->dispatch(ProgramType::Advect, 0);
             }
 
             // dispatch project compute shader
             if (EnableProject)
             {
-                velocity->dispatch(ProgramType::Project, 0);
+                velocityGrid->dispatch(ProgramType::Project, 0);
             }
 
             /* Quad rendering */
@@ -141,25 +145,37 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             if (DebugDispDiv)
             {
-                velocity->DispDiv(0);
+                velocityGrid->DispDiv(0);
             }
             else if (DebugDispAdvect)
             {
-                velocity->DispAdvect(0);
+                velocityGrid->DispAdvect(0);
             }
             else if (DebugDispProject)
             {
-                velocity->DispProject(0);
+                velocityGrid->DispProject(0);
             }
             else
             {
                 // disp density
-                bgfx::setBuffer(0, velocity->getBufferHandle(BufferType::IsFluid), bgfx::Access::Read);
-                bgfx::setBuffer(1, velocity->getBufferHandle(BufferType::CurVelX), bgfx::Access::Read);
-                bgfx::setBuffer(2, velocity->getBufferHandle(BufferType::CurVelY), bgfx::Access::Read);
+                // bgfx::setBuffer(0, velocityGrid->getBufferHandle(BufferType::IsFluid), bgfx::Access::Read);
+                // bgfx::setBuffer(1, velocityGrid->getBufferHandle(BufferType::CurVelX), bgfx::Access::Read);
+                // bgfx::setBuffer(2, velocityGrid->getBufferHandle(BufferType::CurVelY), bgfx::Access::Read);
 
-                bgfx::setState(BGFX_STATE_DEFAULT);
-                bgfx::submit(0, _quadProgram);
+                // bgfx::setState(BGFX_STATE_DEFAULT);
+                // bgfx::submit(0, _quadProgram);
+
+                // test cube rendering
+                // set all the matrices
+                glm::mat4 model = glm::identity<glm::mat4>();
+                model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 0.7, 0.2));
+                glm::mat4 view =
+                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
+                bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
+                // set viewport
+                bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
+                velocityCube->RenderBoundBox();
             }
 
             bgfx::frame();
@@ -181,16 +197,16 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         double x, y;
                         glfwGetCursorPos(_window, &x, &y);
 
-                        // calculate the velocity dir
+                        // calculate the velocityGrid dir
                         glm::vec2 velDir = glm::vec2(x - lastMousePosX, y - lastMousePosY);
                         velDir = glm::normalize(velDir);
 
                         // update uniforms
-                        velocity->updateUniforms(UniformType::InterPosX, x);
-                        velocity->updateUniforms(UniformType::InterPosY, y);
-                        velocity->updateUniforms(UniformType::InterVelX, velDir.x);
+                        velocityGrid->updateUniforms(UniformType::InterPosX, x);
+                        velocityGrid->updateUniforms(UniformType::InterPosY, y);
+                        velocityGrid->updateUniforms(UniformType::InterVelX, velDir.x);
                         //    the origin is in the top left
-                        velocity->updateUniforms(UniformType::InterVelY, -velDir.y);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
 
                         // velocity->updateUniforms(UniformType::mouseVelX, 1.0);
                         // velocity->updateUniforms(UniformType::mouseVelY, 0.0);
@@ -200,7 +216,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         lastMousePosY = _event.pos.y;
 
                         // dispatch shader
-                        velocity->dispatch(ProgramType::AddSource, 0);
+                        velocityGrid->dispatch(ProgramType::AddSource, 0);
 
                         // std::cout << 'test' << std::endl;
 
@@ -224,7 +240,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     if (_event.keyboard.key == GLFW_KEY_R)
                     {
                         std::cout << "Reset the program" << std::endl;
-                        velocity->dispatch(ProgramType::Reset, 0);
+                        velocityGrid->dispatch(ProgramType::Reset, 0);
                         // EnableAdvect = false;
                         // EnableProject = false;
                     }
@@ -283,7 +299,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
   public:
     ExampleFluidSim(const char *name, const char *description, const char *url)
-        : shift::AppBaseGLFW(name, description, url), velocity(nullptr)
+        : shift::AppBaseGLFW(name, description, url), velocityGrid(nullptr), velocityCube(nullptr)
     {
     }
 
@@ -308,7 +324,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;
 
-    VelocityFieldGrid *velocity;
+    VelocityFieldGrid *velocityGrid;
+    VelocityFieldCube *velocityCube;
 };
 
 int main(int _argc, const char **_argv)

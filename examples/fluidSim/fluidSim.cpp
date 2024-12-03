@@ -58,11 +58,13 @@ double lastMousePosX = 0.0f;
 double lastMousePosY = 0.0f;
 bool isPressed = false;
 
+// for debug
 bool EnableAdvect = true;
 bool EnableProject = true;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
 bool DebugDispAdvect = false;
+float elapsed = 0;
 
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
@@ -118,7 +120,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             /* Update uniforms */
             float curFrame = glfwGetTime();
-            float deltaTime = curFrame - lastFrame;
+            elapsed += (curFrame - lastFrame);
             lastFrame = curFrame;
 
             // std::cout << "FPS: " << 1 / deltaTime << std::endl;
@@ -168,11 +170,14 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 // test cube rendering
                 // set all the matrices
                 glm::mat4 model = glm::identity<glm::mat4>();
-                model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0, 0.7, 0.2));
+                model = glm::rotate(model, glm::radians(15.0f * elapsed), glm::vec3(1.0, 0.0, 0.0));
                 glm::mat4 view =
-                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.3f, 0.0f));
                 glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
+
+                bgfx::setTransform(&model[0][0]);
                 bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
+
                 // set viewport
                 bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
                 velocityCube->RenderBoundBox();

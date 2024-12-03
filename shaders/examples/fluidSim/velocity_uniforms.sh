@@ -22,11 +22,11 @@ uniform vec4 uParams[5];
 #define speedDeltaTime (uDeltaTime * uSpeed)
 
 uint LEFT(uint idx) {
-    return idx - 1;
+    return idx - 1u;
 }
 
 uint RIGHT(uint idx) {
-    return idx + 1;
+    return idx + 1u;
 }
 
 uint UP(uint idx) {
@@ -42,5 +42,5 @@ uint Index2D(uint x, uint y, float simResX) {
 }
 
 uint Index3D(uint x, uint y, uint z, float simResX, float simResY) {
-    return 0;
+    return 0u;
 }

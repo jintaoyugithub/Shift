@@ -77,8 +77,10 @@ void VelocityFieldCube::RenderBoundBox()
 {
     bgfx::setVertexBuffer(0, _vbhCube);
     bgfx::setIndexBuffer(_ibhCube);
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
     // bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_PT_LINESTRIP);
     bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_BLEND_ALPHA);
     bgfx::submit(0, _vfsCube);
 }
 

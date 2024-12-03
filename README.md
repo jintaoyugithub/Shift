@@ -31,9 +31,17 @@
 
 ### 2024.11.25
 
-- [ ] finish `advect` function, we can run interpolate in `afvect` first, then add advect
+- [x] finish `advect` function, we can run interpolate in `afvect` first, then add advect
 - [ ] add camera movement
 - [ ] interpolate the velocity after `add source`
+
+### 2024.12.03
+
+- [ ] volumetric data of **isFluid** and display it
+
+actually **Velocity Field in 3D** can be also considered as the volumetric data
+
+- [ ] Laid down the 2 dimension one, and add sphere to interact.
 
 ## Bugs & Questions
 

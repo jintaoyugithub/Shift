@@ -8,6 +8,7 @@
 #include "fluidSimUtils.hpp"
 #include "gleq.hpp"
 #include "tinystl/buffer.h"
+#include "velocityField.hpp"
 #include "velocityFieldCube.hpp"
 #include "velocityFieldGrid.hpp"
 
@@ -66,6 +67,20 @@ bool DebugDispProject = false;
 bool DebugDispAdvect = false;
 float elapsed = 0;
 
+float deltaX = 0.1;
+float deltaY = 0.1;
+float deltaZ = 0.1;
+
+struct testSphere
+{
+    // center pos
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+
+    float radius = 1.0f;
+};
+
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
     void init(int _argc, const char **_argv, uint32_t width, uint32_t height) override
@@ -95,9 +110,15 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
 
             velocityGrid = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
-            velocityCube = new VelocityFieldCube(getWidth(), getHeight(), 1.0f);
+            velocityCube = new VelocityFieldCube(getWidth(), getHeight(), 512.0f);
 
             velocityGrid->dispatch(ProgramType::Reset, 0);
+
+            // init the inter pos uniform with sphere
+            velocityCube->updateUniforms(UniformType::InterPosX, sphere.x);
+            velocityCube->updateUniforms(UniformType::InterPosY, sphere.y);
+            velocityCube->updateUniforms(UniformType::InterPosZ, sphere.z);
+            velocityCube->updateUniforms(UniformType::Radius, sphere.radius);
         }
     }
 
@@ -172,7 +193,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 glm::mat4 model = glm::identity<glm::mat4>();
                 model = glm::rotate(model, glm::radians(15.0f * elapsed), glm::vec3(1.0, 0.0, 0.0));
                 glm::mat4 view =
-                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.3f, 0.0f));
+                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
                 glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
 
                 bgfx::setTransform(&model[0][0]);
@@ -213,22 +234,12 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         //    the origin is in the top left
                         velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
 
-                        // velocity->updateUniforms(UniformType::mouseVelX, 1.0);
-                        // velocity->updateUniforms(UniformType::mouseVelY, 0.0);
-
                         // for calculating the velocity dir of the mouse
                         lastMousePosX = _event.pos.x;
                         lastMousePosY = _event.pos.y;
 
                         // dispatch shader
                         velocityGrid->dispatch(ProgramType::AddSource, 0);
-
-                        // std::cout << 'test' << std::endl;
-
-                        // swap(velocity->getBufferHandle(BufferType::prevVelX),
-                        //      velocity->getBufferHandle(BufferType::curVelX));
-                        // swap(velocity->getBufferHandle(BufferType::prevVelY),
-                        //      velocity->getBufferHandle(BufferType::curVelY));
 
                         //  Debug info
                         // std::cout << velDir.x << " " << velDir.y << std::endl;
@@ -289,6 +300,33 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     }
 
                     break;
+                case GLEQ_KEY_REPEATED:
+                    // control the sphere
+                    if (_event.keyboard.key == GLFW_KEY_UP)
+                    {
+                        sphere.z -= deltaZ;
+                        std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
+                        velocityCube->updateUniforms(UniformType::InterPosZ, sphere.z);
+                    }
+                    if (_event.keyboard.key == GLFW_KEY_DOWN)
+                    {
+                        sphere.z += deltaZ;
+                        std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
+                        velocityCube->updateUniforms(UniformType::InterPosZ, sphere.z);
+                    }
+                    if (_event.keyboard.key == GLFW_KEY_LEFT)
+                    {
+                        sphere.x -= deltaX;
+                        std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
+                        velocityCube->updateUniforms(UniformType::InterPosX, sphere.x);
+                    }
+                    if (_event.keyboard.key == GLFW_KEY_RIGHT)
+                    {
+                        sphere.x += deltaX;
+                        std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
+                        velocityCube->updateUniforms(UniformType::InterPosX, sphere.x);
+                    }
+                    break;
 
                 case GLEQ_KEY_RELEASED:
                     break;
@@ -319,6 +357,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     }
 
   private:
+    testSphere sphere;
+
     bool _computeSupported;
     bool _indirectSupported;
 

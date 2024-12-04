@@ -12,6 +12,7 @@ class VelocityFieldGrid final : public VelocityField
     void AddSource(int _viewID) override;
     void Advect(int _viewID) override;
     void Project(int _viewID) override;
+    void RenderBoundary(int _viewID) override;
 
   public:
     VelocityFieldGrid(int simResX, int simResY, int simResZ);
@@ -24,6 +25,9 @@ class VelocityFieldGrid final : public VelocityField
     void DispProject(int _viewID);
 
   private:
+    bgfx::ProgramHandle _quadProgram;
+    bgfx::VertexBufferHandle _vbhQuad;
+    bgfx::IndexBufferHandle _ibhQuad;
     // for debug
     bgfx::ProgramHandle _dispDivergence;
     bgfx::ProgramHandle _dispAdvect;

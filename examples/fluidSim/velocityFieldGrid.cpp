@@ -6,8 +6,47 @@
 #include "velocityFieldGrid.hpp"
 #include <intrin.h>
 
+struct quadPosTexCoord
+{
+    float _x;
+    float _y;
+    float _z;
+
+    int16_t _u;
+    int16_t _v;
+
+    static void init()
+    {
+        _layout.begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16, true, true)
+            .end();
+    };
+
+    static bgfx::VertexLayout _layout;
+};
+
+bgfx::VertexLayout quadPosTexCoord::_layout;
+
+static quadPosTexCoord quadVertices[] = {
+    {-1.0, -1.0, 0.0, 0, 0},
+    {1.0, -1.0, 0.0, 0x7fff, 0},
+    {1.0, 1.0, 0.0, 0x7fff, 0x7fff},
+    {-1.0, 1.0, 0.0, 0, 0x7fff},
+};
+
+static const uint16_t quadIndices[] = {
+    0, 1, 2, 2, 3, 0,
+};
+
 VelocityFieldGrid::VelocityFieldGrid(int simResX, int simResY, int simResZ) : VelocityField(simResX, simResY, simResZ)
 {
+    // for quad rendering
+    quadPosTexCoord::init();
+    _vbhQuad = bgfx::createVertexBuffer(bgfx::makeRef(quadVertices, sizeof(quadVertices)), quadPosTexCoord::_layout);
+    _ibhQuad = bgfx::createIndexBuffer(bgfx::makeRef(quadIndices, sizeof(quadIndices)));
+    _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
+
     // init compute shaders
     _csReset = shift::loadProgram({"velocity_reset_cs.sc"});
     _csAddSource = shift::loadProgram({"velocity_addSource_cs.sc"});
@@ -20,9 +59,21 @@ VelocityFieldGrid::VelocityFieldGrid(int simResX, int simResY, int simResZ) : Ve
 
 VelocityFieldGrid::~VelocityFieldGrid()
 {
+    bgfx::destroy(_quadProgram);
+    bgfx::destroy(_vbhQuad);
+    bgfx::destroy(_ibhQuad);
     bgfx::destroy(_dispDivergence);
     bgfx::destroy(_dispAdvect);
     bgfx::destroy(_dispProject);
+}
+
+void VelocityFieldGrid::RenderBoundary(int _viewID)
+{
+    bgfx::setVertexBuffer(_viewID, _vbhQuad);
+    bgfx::setIndexBuffer(_ibhQuad);
+    bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(_viewID, _quadProgram);
 }
 
 void VelocityFieldGrid::Reset(int _viewID)
@@ -101,8 +152,8 @@ void VelocityFieldGrid::Project(int _viewID)
 
 void VelocityFieldGrid::DispDiv(int _viewID)
 {
-    /* the vertex buffer and index buffer are set outside */
-
+    bgfx::setVertexBuffer(_viewID, _vbhQuad);
+    bgfx::setIndexBuffer(_ibhQuad);
     // set compute buffer
     bgfx::setBuffer(0, _divergence, bgfx::Access::Read);
     bgfx::setBuffer(1, _isFluid, bgfx::Access::Read);
@@ -114,6 +165,8 @@ void VelocityFieldGrid::DispDiv(int _viewID)
 
 void VelocityFieldGrid::DispAdvect(int _viewID)
 {
+    bgfx::setVertexBuffer(_viewID, _vbhQuad);
+    bgfx::setIndexBuffer(_ibhQuad);
     // set compute buffer
     bgfx::setBuffer(0, _isFluid, bgfx::Access::Read);
     bgfx::setBuffer(1, _curVelX, bgfx::Access::Read);
@@ -126,6 +179,8 @@ void VelocityFieldGrid::DispAdvect(int _viewID)
 
 void VelocityFieldGrid::DispProject(int _viewID)
 {
+    bgfx::setVertexBuffer(_viewID, _vbhQuad);
+    bgfx::setIndexBuffer(_ibhQuad);
     // set compute buffer
     bgfx::setBuffer(0, _isFluid, bgfx::Access::Read);
     bgfx::setBuffer(1, _curVelX, bgfx::Access::Read);

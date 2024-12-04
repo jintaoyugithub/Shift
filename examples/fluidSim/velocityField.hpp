@@ -80,6 +80,7 @@ class VelocityField
     virtual void AddSource(int _viewID) {};
     virtual void Advect(int _viewID) {};
     virtual void Project(int _viewID) {};
+    virtual void RenderBoundary(int _viewID) {};
 
   public:
     VelocityField(int simResX, int simResY, int simResZ);

@@ -12,47 +12,6 @@
 #include "velocityFieldCube.hpp"
 #include "velocityFieldGrid.hpp"
 
-enum ViewportType
-{
-    Velocity,
-    Density,
-    Boundary,
-};
-
-struct quadPosTexCoord
-{
-    float _x;
-    float _y;
-    float _z;
-
-    int16_t _u;
-    int16_t _v;
-
-    static void init()
-    {
-        _layout.begin()
-            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16, true, true)
-            .end();
-    };
-
-    static bgfx::VertexLayout _layout;
-};
-
-bgfx::VertexLayout quadPosTexCoord::_layout;
-
-static quadPosTexCoord quadVertices[] = {
-    // left corner, right corner, top right, top left
-    {-1.0, -1.0, 0.0, 0, 0},
-    {1.0, -1.0, 0.0, 0x7fff, 0},
-    {1.0, 1.0, 0.0, 0x7fff, 0x7fff},
-    {-1.0, 1.0, 0.0, 0, 0x7fff},
-};
-
-static const uint16_t quadIndices[] = {
-    0, 1, 2, 2, 3, 0,
-};
-
 /* Global Variables */
 float lastFrame = 0.0f;
 double lastMousePosX = 0.0f;
@@ -99,16 +58,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
         if (_computeSupported)
         {
-            // init vertex layout
-            quadPosTexCoord::init();
-
-            _vbhQuad =
-                bgfx::createVertexBuffer(bgfx::makeRef(quadVertices, sizeof(quadVertices)), quadPosTexCoord::_layout);
-
-            _ibhQuad = bgfx::createIndexBuffer(bgfx::makeRef(quadIndices, sizeof(quadIndices)));
-
-            _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
-
             velocityGrid = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
             velocityCube = new VelocityFieldCube(getWidth(), getHeight(), 512.0f);
 
@@ -124,12 +73,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
     void shutdown() override
     {
-        if (_computeSupported)
-        {
-            bgfx::destroy(_quadProgram);
-            bgfx::destroy(_vbhQuad);
-            bgfx::destroy(_ibhQuad);
-        }
     }
 
     bool update() override
@@ -163,9 +106,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             }
 
             /* Quad rendering */
-            bgfx::setVertexBuffer(0, _vbhQuad);
-            bgfx::setIndexBuffer(_ibhQuad);
-
             if (DebugDispDiv)
             {
                 velocityGrid->DispDiv(0);
@@ -180,14 +120,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             }
             else
             {
-                // disp density
-                // bgfx::setBuffer(0, velocityGrid->getBufferHandle(BufferType::IsFluid), bgfx::Access::Read);
-                // bgfx::setBuffer(1, velocityGrid->getBufferHandle(BufferType::CurVelX), bgfx::Access::Read);
-                // bgfx::setBuffer(2, velocityGrid->getBufferHandle(BufferType::CurVelY), bgfx::Access::Read);
-
-                // bgfx::setState(BGFX_STATE_DEFAULT);
-                // bgfx::submit(0, _quadProgram);
-
                 // test cube rendering
                 // set all the matrices
                 glm::mat4 model = glm::identity<glm::mat4>();
@@ -361,10 +293,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
     bool _computeSupported;
     bool _indirectSupported;
-
-    bgfx::ProgramHandle _quadProgram;
-    bgfx::VertexBufferHandle _vbhQuad;
-    bgfx::IndexBufferHandle _ibhQuad;
 
     bgfx::DynamicVertexBufferHandle _prevDensityField;
     bgfx::DynamicVertexBufferHandle _curDensityField;

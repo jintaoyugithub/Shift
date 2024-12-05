@@ -3,6 +3,7 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <utils/bgfx.hpp>
+#include <utils/camera.hpp>
 #include <utils/glfw.hpp>
 
 #include <glm/glm.hpp>

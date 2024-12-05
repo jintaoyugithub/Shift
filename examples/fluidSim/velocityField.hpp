@@ -8,6 +8,7 @@ enum ProgramType
     AddSource,
     Advect,
     Project,
+    RenderBoundary,
 };
 
 enum BufferType
@@ -102,6 +103,9 @@ class VelocityField
             break;
         case ProgramType::Project:
             Project(_viewID);
+            break;
+        case ProgramType::RenderBoundary:
+            RenderBoundary(_viewID);
             break;
         }
     }

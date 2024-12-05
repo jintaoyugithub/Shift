@@ -45,7 +45,7 @@ VelocityFieldGrid::VelocityFieldGrid(int simResX, int simResY, int simResZ) : Ve
     quadPosTexCoord::init();
     _vbhQuad = bgfx::createVertexBuffer(bgfx::makeRef(quadVertices, sizeof(quadVertices)), quadPosTexCoord::_layout);
     _ibhQuad = bgfx::createIndexBuffer(bgfx::makeRef(quadIndices, sizeof(quadIndices)));
-    _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
+    _quadProgram = shift::loadProgram({"quad_ws_vs.sc", "quad_fs.sc"});
 
     // init compute shaders
     _csReset = shift::loadProgram({"velocity_reset_cs.sc"});
@@ -71,6 +71,11 @@ void VelocityFieldGrid::RenderBoundary(int _viewID)
 {
     bgfx::setVertexBuffer(_viewID, _vbhQuad);
     bgfx::setIndexBuffer(_ibhQuad);
+
+    bgfx::setBuffer(0, _isFluid, bgfx::Access::Read);
+    bgfx::setBuffer(1, _curVelX, bgfx::Access::Read);
+    bgfx::setBuffer(2, _curVelY, bgfx::Access::Read);
+
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
     bgfx::setState(BGFX_STATE_DEFAULT);
     bgfx::submit(_viewID, _quadProgram);

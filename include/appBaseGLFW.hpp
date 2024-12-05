@@ -5,37 +5,6 @@
 
 namespace shift
 {
-struct MouseButton
-{
-    // Note that enum class is a strong type
-    // It's not allowed implicitly transfer, for example, to int
-    // enum class type
-    enum Enum
-    {
-        None,
-        Left,
-        Middle,
-        Right,
-        Count
-    };
-};
-
-struct MouseState
-{
-    MouseState() : _x(0), _y(0), _z(0)
-    {
-        for (auto ii = 0; ii < shift::MouseButton::Count; ++ii)
-        {
-            _buttons[ii] = shift::MouseButton::None;
-        }
-    }
-
-    double _x;
-    double _y;
-    int32_t _z;
-    uint8_t _buttons[shift::MouseButton::Count];
-};
-
 class AppBaseGLFW : public shift::AppBase
 {
   private:
@@ -64,8 +33,7 @@ class AppBaseGLFW : public shift::AppBase
     GLFWwindow *_window;
     GLEQevent _event;
 
-    // for test
-    shift::MouseState _mouseState;
+    shift::Camera *_camera;
 
   private:
     uint32_t _width;

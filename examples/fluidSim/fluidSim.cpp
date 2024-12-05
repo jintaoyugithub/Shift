@@ -84,8 +84,11 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             /* Update uniforms */
             float curFrame = glfwGetTime();
-            elapsed += (curFrame - lastFrame);
+            float deltaTime = (curFrame - lastFrame);
+            elapsed += deltaTime;
             lastFrame = curFrame;
+
+            _camera->OnUpdate(deltaTime);
 
             // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
@@ -120,20 +123,31 @@ class ExampleFluidSim : public shift::AppBaseGLFW
             }
             else
             {
+                // disap isFluid in a new small viewport
+                // int debugWindowSize = 128;
+                // bgfx::setViewRect(1, getWidth() - debugWindowSize, getHeight() - debugWindowSize, getWidth(),
+                //                   getHeight());
+                // velocityGrid->dispatch(ProgramType::RenderBoundary, 1);
+
                 // test cube rendering
                 // set all the matrices
                 glm::mat4 model = glm::identity<glm::mat4>();
-                model = glm::rotate(model, glm::radians(15.0f * elapsed), glm::vec3(1.0, 0.0, 0.0));
-                glm::mat4 view =
-                    glm::lookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-                glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f, 100.0f);
+                model = glm::rotate(model, glm::radians(80.0f), glm::vec3(0.0, 1.0, 0.0));
+                // glm::mat4 view =
+                //     glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f,
+                //     0.0f));
+                // glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f,
+                // 100.0f);
 
+                glm::mat4 view = _camera->GetProperties<glm::mat4>(shift::Property::ViewMat);
+                glm::mat4 proj = _camera->GetProperties<glm::mat4>(shift::Property::ProjMat);
                 bgfx::setTransform(&model[0][0]);
                 bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
 
                 // set viewport
                 bgfx::setViewRect(0, 0, 0, uint16_t(getWidth()), uint16_t(getHeight()));
-                velocityCube->RenderBoundBox();
+                // velocityCube->RenderBoundBox();
+                velocityGrid->dispatch(ProgramType::RenderBoundary, 0);
             }
 
             bgfx::frame();
@@ -293,9 +307,6 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
     bool _computeSupported;
     bool _indirectSupported;
-
-    bgfx::DynamicVertexBufferHandle _prevDensityField;
-    bgfx::DynamicVertexBufferHandle _curDensityField;
 
     VelocityFieldGrid *velocityGrid;
     VelocityFieldCube *velocityCube;

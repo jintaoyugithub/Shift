@@ -4,7 +4,7 @@
 namespace shift
 {
 AppBaseGLFW::AppBaseGLFW(const char *name, const char *description, const char *url)
-    : shift::AppBase(name, description, url), _window(nullptr), _width(SHIFT_DEFAULT_WIDTH),
+    : shift::AppBase(name, description, url), _window(nullptr), _camera(nullptr), _width(SHIFT_DEFAULT_WIDTH),
       _height(SHIFT_DEFAULT_HEIGHT), _title(name)
 {
 }
@@ -71,8 +71,8 @@ bool AppBaseGLFW::windowInit(uint32_t width, uint32_t height)
         return false;
     }
 
-    // init input system
-    // gleqTrackWindow(_window);
+    // TODO: camera init should be in ComponentsInit()
+    _camera = new Camera(_window, getWidth(), getHeight());
 
     return true;
 }
@@ -114,6 +114,7 @@ void AppBaseGLFW::shutdown()
     bgfx::shutdown();
     glfwDestroyWindow(_window);
     glfwTerminate();
+    delete _camera;
 }
 
 void AppBaseGLFW::run(int _argc, const char **_argv)

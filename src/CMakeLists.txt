@@ -1,9 +1,14 @@
 set(LIB_NAME shift_lib)
 
 set(SOURCES
-    appBase.cpp appBaseGLFW.cpp "utils/bgfx.cpp" "utils/glfw.cpp"
+    appBase.cpp 
+    appBaseGLFW.cpp 
+    "utils/bgfx.cpp" 
+    "utils/glfw.cpp"
     # "utils/imgui.cpp"
-    "utils/common.cpp")
+    "utils/common.cpp"
+    "utils/camera.cpp"
+)
 
 add_library(${LIB_NAME} STATIC ${SOURCES})
 

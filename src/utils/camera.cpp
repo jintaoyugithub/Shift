@@ -1,4 +1,3 @@
-#include "glm/ext/matrix_transform.hpp"
 #include <GLFW/glfw3.h>
 #include <utils/camera.hpp>
 
@@ -31,6 +30,8 @@ void Camera::OnUpdate(float ts)
     glm::vec2 mousePos = glm::vec2(x, y);
     // get mouse delta pos
     glm::vec2 deltaMousePos = (mousePos - _lastMousePos) * ts;
+    // update last mouse pos
+    _lastMousePos = mousePos;
 
     // Every actions happen here need the right mouse button to be pressed
     // Should be intergrated into input system
@@ -67,7 +68,31 @@ void Camera::OnUpdate(float ts)
         isMoved = true;
     }
 
+    if (isKeyDown(_window, GLFW_KEY_Q))
+    {
+        _pos += _upDir * _moveSpeed * ts;
+        isMoved = true;
+    }
+
+    if (isKeyDown(_window, GLFW_KEY_E))
+    {
+        _pos -= _upDir * _moveSpeed * ts;
+        isMoved = true;
+    }
+
     // camera rotations
+    if (deltaMousePos.x != 0.0f || deltaMousePos.y != 0.0f)
+    {
+        float pitchDelta = deltaMousePos.y * _rotateSpped;
+        float yawDelta = deltaMousePos.x * _rotateSpped;
+
+        // TODO: figure out how quat works in graphics
+        glm::quat q = glm::normalize(
+            glm::cross(glm::angleAxis(-pitchDelta, _rightDir), glm::angleAxis(-yawDelta, glm::vec3(0.0f, 1.0f, 0.0f))));
+        _viewDir = glm::rotate(q, _viewDir);
+
+        isMoved = true;
+    }
 
     // recalculate the view and proj matrices
     if (isMoved)

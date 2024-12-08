@@ -3,7 +3,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace shift
 {
@@ -93,7 +97,7 @@ class Camera
 
   private:
     /* Camera properties */
-    glm::vec3 _pos{glm::vec3(0.0, 0.0, 3.0)};
+    glm::vec3 _pos{glm::vec3(0.0, 0.0, 5.0)};
     // camera coord system
     // The camera coord system of OpenGL is right hand system
     // But the positive view dir is negative Z

@@ -7,6 +7,7 @@ BUFFER_RW(_curVelX, float, 2);
 BUFFER_RW(_curVelY, float, 3);
 BUFFER_WO(_isFluid, float, 4);
 
+
 NUM_THREADS(8, 8, 1)
 void main() {
   uvec2 pos = gl_GlobalInvocationID.xy;

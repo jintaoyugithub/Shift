@@ -26,18 +26,18 @@ bool DebugDispProject = false;
 bool DebugDispAdvect = false;
 float elapsed = 0;
 
-float deltaX = 0.1;
-float deltaY = 0.1;
-float deltaZ = 0.1;
+float deltaX = 0.01;
+float deltaY = 0.01;
+float deltaZ = 0.01;
 
 struct testSphere
 {
     // center pos
     float x = 0.0f;
     float y = 0.0f;
-    float z = 0.0f;
+    float z = -0.1f;
 
-    float radius = 1.0f;
+    float radius = 5.0f;
 };
 
 class ExampleFluidSim : public shift::AppBaseGLFW
@@ -132,16 +132,11 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 // test cube rendering
                 // set all the matrices
                 glm::mat4 model = glm::identity<glm::mat4>();
-                model = glm::rotate(model, glm::radians(80.0f), glm::vec3(0.0, 1.0, 0.0));
-                // glm::mat4 view =
-                //     glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f,
-                //     0.0f));
-                // glm::mat4 proj = glm::perspective(glm::radians(60.0f), float(getWidth()) / getHeight(), 0.1f,
-                // 100.0f);
+                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
 
                 glm::mat4 view = _camera->GetProperties<glm::mat4>(shift::Property::ViewMat);
                 glm::mat4 proj = _camera->GetProperties<glm::mat4>(shift::Property::ProjMat);
-                bgfx::setTransform(&model[0][0]);
+                // bgfx::setTransform(&model[0][0]);
                 bgfx::setViewTransform(0, &view[0][0], &proj[0][0]);
 
                 // set viewport
@@ -158,8 +153,16 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 switch (_event.type)
                 {
                 case GLEQ_BUTTON_PRESSED:
-                    std::cout << "left button pressed" << std::endl;
-                    isPressed = true;
+                    switch (_event.mouse.button)
+                    {
+                    case GLFW_MOUSE_BUTTON_LEFT:
+                        std::cout << "left button pressed" << std::endl;
+                        isPressed = true;
+                        break;
+                    case GLFW_MOUSE_BUTTON_RIGHT:
+                        std::cout << "right button pressed" << std::endl;
+                        break;
+                    }
                     break;
 
                 case GLEQ_CURSOR_MOVED: {
@@ -194,8 +197,16 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 }
 
                 case GLEQ_BUTTON_RELEASED:
-                    std::cout << "left button released" << std::endl;
-                    isPressed = false;
+                    switch (_event.mouse.button)
+                    {
+                    case GLFW_MOUSE_BUTTON_LEFT:
+                        std::cout << "left button released" << std::endl;
+                        isPressed = false;
+                        break;
+                    case GLFW_MOUSE_BUTTON_RIGHT:
+                        std::cout << "right button released" << std::endl;
+                        break;
+                    }
                     break;
 
                 case GLEQ_KEY_PRESSED:
@@ -244,33 +255,50 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         DebugDispProject = false;
                         DebugDispDiv = false;
                     }
-
                     break;
+
                 case GLEQ_KEY_REPEATED:
                     // control the sphere
                     if (_event.keyboard.key == GLFW_KEY_UP)
                     {
-                        sphere.z -= deltaZ;
+                        sphere.y += deltaZ;
                         std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
-                        velocityCube->updateUniforms(UniformType::InterPosZ, sphere.z);
+
+                        velocityGrid->updateUniforms(UniformType::InterPosY, sphere.y);
+                        velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
+
+                        velocityGrid->dispatch(ProgramType::AddSource, 0);
                     }
                     if (_event.keyboard.key == GLFW_KEY_DOWN)
                     {
-                        sphere.z += deltaZ;
+                        sphere.y -= deltaZ;
                         std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
-                        velocityCube->updateUniforms(UniformType::InterPosZ, sphere.z);
+
+                        velocityGrid->updateUniforms(UniformType::InterPosY, sphere.y);
+                        velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, -1.0f);
+                        velocityGrid->dispatch(ProgramType::AddSource, 0);
                     }
                     if (_event.keyboard.key == GLFW_KEY_LEFT)
                     {
                         sphere.x -= deltaX;
                         std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
-                        velocityCube->updateUniforms(UniformType::InterPosX, sphere.x);
+
+                        velocityGrid->updateUniforms(UniformType::InterPosX, sphere.x);
+                        velocityGrid->updateUniforms(UniformType::InterVelX, -1.0f);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, 0.0f);
+                        velocityGrid->dispatch(ProgramType::AddSource, 0);
                     }
                     if (_event.keyboard.key == GLFW_KEY_RIGHT)
                     {
                         sphere.x += deltaX;
                         std::cout << sphere.x << " " << sphere.y << " " << sphere.z << std::endl;
-                        velocityCube->updateUniforms(UniformType::InterPosX, sphere.x);
+
+                        velocityGrid->updateUniforms(UniformType::InterPosX, sphere.x);
+                        velocityGrid->updateUniforms(UniformType::InterVelX, 1.0f);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, 0.0f);
+                        velocityGrid->dispatch(ProgramType::AddSource, 0);
                     }
                     break;
 

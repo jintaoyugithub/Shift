@@ -55,7 +55,9 @@ void main() {
 
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
 
-    if(_isFluid[index] == 0) {
+    float dis = distance(v2f_posWS, vec3(uMousePosX, uMousePosY, uInterPosZ));
+
+    if(dis < uRadius) {
       if (abs(_curVelX[index]) < 1e-5 && abs(_curVelY[index]) < 1e-5) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
       } else {
@@ -71,8 +73,6 @@ void main() {
 
         gl_FragColor = vec4(color, 1.0);
       }
-    } else if(_isFluid[index] == -1) {
-        gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0);
     } else {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }

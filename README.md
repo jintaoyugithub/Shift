@@ -86,8 +86,12 @@ add source -> add noise -> advect
 
 ### 2024.11.27
 
-- [ ] advect的方向会往比正常方向偏左，检查一下advect中的函数
+- [x] advect的方向会往比正常方向偏左，检查一下advect中的函数
 
+### 2024.12.8
+
+- [ ] `Project`在（0，0）点有问题，它会自己在这个点产生未定义的velocity
+- [ ] `Project`在四个角都有问题，在velocity为0的情况下他们会自己有本应该是有速度的颜色
 
 ## Reminder
 

@@ -41,14 +41,7 @@ vec4 DebugDispDiv(float div, float isFluid) {
       color = vec4(0.2, 0.2, 0.2, 1.0);
   }
 
-  //if(isFluid == 1) {
-  //  div = clamp(div, 0.5, 1.0);
-  //  color = vec4(div, 0.0, 0.0, 1.0);
-  //} else if (isFluid == -1) {
-  //  color = vec4(0.0, 1.0, 0.0, 1.0);
-  //} else {
-  //  color = vec4(0.2, 0.2, 0.2, 1.0);
-  //}
+  //color = vec4(div, 0.0, 0.0, 1.0);
 
   return color;
 }
@@ -61,6 +54,6 @@ void main() {
     vec4 divColor = DebugDispDiv(_divergence[index], isFluid);
     vec4 actColor = DebugDispActive(isFluid);
 
-    gl_FragColor = divColor;
-    //gl_FragColor = actColor;
+    //gl_FragColor = divColor;
+    gl_FragColor = actColor;
 }

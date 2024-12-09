@@ -50,6 +50,8 @@ float InterpolateCurVelX(uvec2 pos, uint index) {
   
   //bool hasDown = bool(_isFluid[DOWN(index)]);
   //bool hasRight = bool(_isFluid[RIGHT(index)]);
+
+  // might have a bug here, because the origin is different!!!
   bool hasDown = pos.y > 0;
   bool hasRight = float(pos.x) < uSimResX-1;
   float velX_tl = _prevVelX[index];
@@ -150,8 +152,9 @@ float InterpolatePrevVelXNew(vec2 pos) {
   float top = oneMinsLambda.x * velX_tl + lambda.x * velX_tr;
   float bottom = oneMinsLambda.x * velX_bl + lambda.x * velX_br;
 
-  //float velX = oneMinsLambda.y * bottom + lambda.y * top;
-  float velX = oneMinsLambda.y * top + lambda.y * bottom;
+  float velX = oneMinsLambda.y * bottom + lambda.y * top;
+  //float velX = oneMinsLambda.y * top + lambda.y * bottom;
+  
   return velX;
 }
 
@@ -173,8 +176,11 @@ float InterpolatePrevVelYNew(vec2 pos) {
   float velY_bl = hasLeft ? _prevVelY[LEFT(index)] : 0.0;
   float velY_br = _prevVelY[index];
 
-  float top = oneMinsLambda.x * velY_tr + lambda.x * velY_tl;
-  float bottom = oneMinsLambda.x * velY_br + lambda.x * velY_bl;
+  //float top = oneMinsLambda.x * velY_tr + lambda.x * velY_tl;
+  //float bottom = oneMinsLambda.x * velY_br + lambda.x * velY_bl;
+
+  float top = oneMinsLambda.x * velY_tl + lambda.x * velY_tr;
+  float bottom = oneMinsLambda.x * velY_bl + lambda.x * velY_br;
 
   float velY = oneMinsLambda.y * bottom + lambda.y * top;
   return velY;
@@ -183,6 +189,7 @@ float InterpolatePrevVelYNew(vec2 pos) {
 void AdvectVelX(uvec2 pos, uint index) {
   if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
     && _isFluid[index] == 1 && _isFluid[LEFT(index)] == 1) {
+    //&& _isFluid[index] == 1) {
       // calculate the current velocity
       float curVelY = InterpolateCurVelY(pos, index); 
       vec2 curVel = vec2(_prevVelX[index], curVelY);
@@ -200,6 +207,7 @@ void AdvectVelX(uvec2 pos, uint index) {
 void AdvectVelY(uvec2 pos, uint index) {
   if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
     && _isFluid[index] == 1 && _isFluid[DOWN(index)] == 1) {
+    //&& _isFluid[index] == 1) {
       // same as how to advect velocity X
       float curVelX = InterpolateCurVelX(pos, index); 
       vec2 curVel = vec2(curVelX, _prevVelY[index]);

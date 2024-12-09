@@ -6,6 +6,7 @@ BUFFER_WO(_prevVelY, float, 1);
 BUFFER_WO(_curVelX, float, 2);
 BUFFER_WO(_curVelY, float, 3);
 BUFFER_WO(_isFluid, float, 4);
+BUFFER_WO(_divergence, float, 5);
 
 NUM_THREADS(8, 8, 1)
 void main() {
@@ -17,12 +18,13 @@ void main() {
     _prevVelY[index] = 0.0;
     _curVelX[index] = 0.0;
     _curVelY[index] = 0.0;
-
-    // boundary
-    _isFluid[index] = -1.0;
+    _divergence[index] = 0.0;
 
     // determine if the current grid is inside the sim area
     if(pos.x > 0 && pos.y > 0 && pos.x < uSimResX - 1 && pos.y < uSimResY - 1) {
-        _isFluid[index] = 1.0;
+      _isFluid[index] = 1.0;
+    } else {
+      // boundary
+      _isFluid[index] = -1.0;
     }
 }

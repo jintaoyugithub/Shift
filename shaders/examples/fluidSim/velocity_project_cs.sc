@@ -15,11 +15,13 @@ void main() {
   pos.y = (pos.y << 1) + uint(uOffsetY);
 
   // if out of the boundray
-  if(pos.x <= 10 || pos.y <= 10 || pos.x >= uint(uSimResX-10) || pos.y >= uint(uSimResY-10)) return;
+  if(pos.x <= 0 || pos.y <= 0 || pos.x >= uint(uSimResX-1) || pos.y >= uint(uSimResY-1)) return;
 
   uint index = Index2D(pos.x, pos.y, uSimResX);
 
   //if(_isFluid[index] == 0 || _isFluid[index] == -1.0) return;
+  if(_isFluid[index] == -1.0) return;
+
 
   // we assume that velocity x enter from right side of the current cell and exit from its left
   // velocity y enter from up and left from down, like
@@ -49,7 +51,14 @@ void main() {
   // I have three different value in _isFuild, 0, -1, 1
   // this line of code may cause neighboursNum = 0 because of the -1
   // which caused an incorrect premature return
-  float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
+  int rn = _isFluid[RIGHT(index)] < 0.0 ? 0 : 1;
+  int ln = _isFluid[LEFT(index)] < 0.0 ? 0 : 1;
+  int un = _isFluid[UP(index)] < 0.0 ? 0 : 1;
+  int dn = _isFluid[DOWN(index)] < 0.0 ? 0 : 1;
+
+  //float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
+  float neighboursNum = rn + ln + un + dn;
+  
   if(neighboursNum == 0) return;
 
   // if divergence > 0 means positive divergence, we need more velocity out

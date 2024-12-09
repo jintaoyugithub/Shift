@@ -19,8 +19,8 @@ double lastMousePosY = 0.0f;
 bool isPressed = false;
 
 // for debug
-bool EnableAdvect = true;
-bool EnableProject = true;
+bool EnableAdvect = false;
+bool EnableProject = false;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
 bool DebugDispAdvect = false;
@@ -59,6 +59,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
         if (_computeSupported)
         {
             velocityGrid = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
+            velocityGrid->updateUniforms(UniformType::Radius, 15.0f);
+
             velocityCube = new VelocityFieldCube(getWidth(), getHeight(), 512.0f);
 
             velocityGrid->dispatch(ProgramType::Reset, 0);
@@ -178,20 +180,29 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
                         // update uniforms
                         velocityGrid->updateUniforms(UniformType::InterPosX, x);
-                        velocityGrid->updateUniforms(UniformType::InterPosY, y);
+                        velocityGrid->updateUniforms(UniformType::InterPosY,
+                                                     velocityGrid->getUniforms(UniformType::SimResY) - y);
                         velocityGrid->updateUniforms(UniformType::InterVelX, velDir.x);
-                        //    the origin is in the top left
+                        // the origin is in the top left
                         velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
+                        // velocityGrid->updateUniforms(UniformType::InterVelY, velDir.y);
+
+                        // for debug
+                        velocityGrid->updateUniforms(UniformType::InterVelX, -.5f);
+                        velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
 
                         // for calculating the velocity dir of the mouse
-                        lastMousePosX = _event.pos.x;
-                        lastMousePosY = _event.pos.y;
+                        // lastMousePosX = _event.pos.x;
+                        // lastMousePosY = _event.pos.y;
+
+                        lastMousePosX = x;
+                        lastMousePosY = y;
 
                         // dispatch shader
                         velocityGrid->dispatch(ProgramType::AddSource, 0);
 
                         //  Debug info
-                        // std::cout << velDir.x << " " << velDir.y << std::endl;
+                        std::cout << velDir.x << " " << -velDir.y << std::endl;
                     }
                     break;
                 }

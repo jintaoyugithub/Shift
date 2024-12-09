@@ -46,9 +46,9 @@ VelocityFieldGrid::VelocityFieldGrid(int simResX, int simResY, int simResZ) : Ve
     _vbhQuad = bgfx::createVertexBuffer(bgfx::makeRef(quadVertices, sizeof(quadVertices)), quadPosTexCoord::_layout);
     _ibhQuad = bgfx::createIndexBuffer(bgfx::makeRef(quadIndices, sizeof(quadIndices)));
     // Debug quads
-    //_quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
+    _quadProgram = shift::loadProgram({"quad_vs.sc", "quad_fs.sc"});
     //_quadProgram = shift::loadProgram({"quad_ws_vs.sc", "quad_fs.sc"});
-    _quadProgram = shift::loadProgram({"quad_ws_vs.sc", "quad_objectInter_fs.sc"});
+    //_quadProgram = shift::loadProgram({"quad_ws_vs.sc", "quad_objectInter_fs.sc"});
 
     // init compute shaders
     _csReset = shift::loadProgram({"velocity_reset_cs.sc"});
@@ -91,6 +91,7 @@ void VelocityFieldGrid::Reset(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::Write);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::Write);
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Write);
+    bgfx::setBuffer(5, _divergence, bgfx::Access::Write);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
     bgfx::dispatch(_viewID, _csReset, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
@@ -124,9 +125,11 @@ void VelocityFieldGrid::Project(int _viewID)
 {
     for (int i = 0; i < solverItr; i++)
     {
-        for (int passX = 0; passX < 2; passX++)
+        // for (int passX = 0; passX < 2; passX++)
+        for (int passY = 0; passY < 2; passY++)
         {
-            for (int passY = 0; passY < 2; passY++)
+            // for (int passY = 0; passY < 2; passY++)
+            for (int passX = 0; passX < 2; passX++)
             {
                 /*
                    The first offset (0,0), assume we have a 5x5 grid

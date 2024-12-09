@@ -60,22 +60,22 @@ void main() {
       if (abs(_curVelX[index]) < 1e-5 && abs(_curVelY[index]) < 1e-5) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
       } else {
-        float maxVel = 15.0;
+        float maxVel = speedDeltaTime;
 
         vec2 velDir = vec2(_curVelX[index], _curVelY[index]);
         float angle = dir2Angle(velDir.y, velDir.x);
         float speed = length(velDir);
 
         float H = angle;
-        float S = min(speed / 10.0f, 1.0f);
-        float V = min(speed / 10.0f, 1.0f);
+        float S = min(speed / maxVel, 1.0f);
+        float V = min(speed / maxVel, 1.0f);
 
         float ratio = speed / 1.2f;
 
-        vec3 color = HSVtoRGB(H, 1.0, 1.0);
+        vec3 color = HSVtoRGB(H, S, V);
 
-        gl_FragColor = vec4(color * ratio, 1.0);
-        //gl_FragColor = vec4(color, 1.0);
+        //gl_FragColor = vec4(color * ratio, 1.0);
+        gl_FragColor = vec4(color, 1.0);
       }
     } else {
       gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);

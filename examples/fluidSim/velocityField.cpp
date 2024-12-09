@@ -11,7 +11,7 @@ VelocityField::VelocityField(int simResX, int simResY, int simResZ)
     _uParams.interVelX = 0.0f;
     _uParams.interVelY = 0.0f;
     _uParams.interVelZ = 0.0f;
-    _uParams.radius = 10.0f;
+    _uParams.radius = 20.0f;
     _uParams.simResX = float(simResX);
     _uParams.simResY = float(simResY);
     _uParams.simResZ = float(simResZ);

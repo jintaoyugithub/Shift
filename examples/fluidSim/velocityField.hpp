@@ -213,6 +213,21 @@ class VelocityField
         }
     }
 
+    inline float getUniforms(UniformType _type)
+    {
+        switch (_type)
+        {
+        case UniformType::SimResX:
+            return _uParams.simResX;
+        case UniformType::SimResY:
+            return _uParams.simResY;
+        case UniformType::SimResZ:
+            return _uParams.simResZ;
+        }
+
+        return 0.0f;
+    }
+
   public:
     int solverItr = 50;
 

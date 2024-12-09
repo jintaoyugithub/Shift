@@ -1,4 +1,4 @@
-$input v2f_texCoord0, v2f_posWS
+$input v2f_texCoord0
 
 #include "../../utils/bgfx_compute.sh"
 #include "velocity_uniforms.sh"

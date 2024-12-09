@@ -3,8 +3,8 @@
 
 BUFFER_RO(_prevVelX, float, 0);
 BUFFER_RO(_prevVelY, float, 1);
-BUFFER_RW(_curVelX, float, 2);
-BUFFER_RW(_curVelY, float, 3);
+BUFFER_WO(_curVelX, float, 2);
+BUFFER_WO(_curVelY, float, 3);
 BUFFER_RO(_isFluid, float, 4);
 
 /* before we advect the velocity, we need to interpolate the gap
@@ -54,6 +54,7 @@ float InterpolateCurVelX(uvec2 pos, uint index) {
   // might have a bug here, because the origin is different!!!
   bool hasDown = pos.y > 0;
   bool hasRight = float(pos.x) < uSimResX-1;
+
   float velX_tl = _prevVelX[index];
   float velX_tr = hasRight ? _prevVelX[RIGHT(index)] : 0.0;
   float velX_bl = hasDown ? _prevVelX[DOWN(index)] : 0.0;
@@ -68,6 +69,7 @@ float InterpolateCurVelY(uvec2 pos, uint index) {
   //bool hasUp = bool(_isFluid[UP(index)]);
   bool hasLeft = pos.x > 0;
   bool hasUp = float(pos.y) < uSimResY-1;
+
   float velY_br = _prevVelY[index];
   float velY_bl = hasLeft ? _prevVelY[LEFT(index)] : 0.0;
   float velY_tl = (hasLeft && hasUp) ? _prevVelY[UP(LEFT(index))] : 0.0;
@@ -187,14 +189,17 @@ float InterpolatePrevVelYNew(vec2 pos) {
 }
 
 void AdvectVelX(uvec2 pos, uint index) {
-  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
+  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1) //){
     && _isFluid[index] == 1 && _isFluid[LEFT(index)] == 1) {
     //&& _isFluid[index] == 1) {
       // calculate the current velocity
       float curVelY = InterpolateCurVelY(pos, index); 
-      vec2 curVel = vec2(_prevVelX[index], curVelY);
+      vec2 curVel = vec2(_prevVelX[index], curVelY-0.5f);
+
       // calculate the previous position during deltatime
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
+      //vec2 prevPos = vec2(pos) - curVel;
+      
       // calculate previous velocity X
       float prevVelX = InterpolatePrevVelXNew(prevPos);
       // and set to the current velcity X
@@ -205,15 +210,31 @@ void AdvectVelX(uvec2 pos, uint index) {
 }
 
 void AdvectVelY(uvec2 pos, uint index) {
-  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1)
+  if(pos.x > 0 && pos.y > 0 && pos.x < uint(uSimResX-1) && pos.y < uint(uSimResY-1) //){
     && _isFluid[index] == 1 && _isFluid[DOWN(index)] == 1) {
     //&& _isFluid[index] == 1) {
       // same as how to advect velocity X
-      float curVelX = InterpolateCurVelX(pos, index); 
-      vec2 curVel = vec2(curVelX, _prevVelY[index]);
+      float curVelX = InterpolateCurVelX(pos, index);  // maight be wrong
+      
+      /* For debug */
+      vec2 curVel = vec2(curVelX-0.5f, _prevVelY[index]); 
+      //vec2 curVel = vec2(0.0f, _prevVelY[index]); normal
+      //vec2 curVel = vec2(-0.5f, _prevVelY[index]); looks like (0.0, ~)
+      //vec2 curVel = vec2(-1.0f, _prevVelY[index]); // looks like (-1.0f, ~)
+      //vec2 curVel = vec2(0.1f, _prevVelY[index]);  // looks like (1.0f, ~)
+
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
+      //vec2 prevPos = vec2(pos) - curVel;
+
       float prevVelY = InterpolatePrevVelYNew(prevPos);
-      _curVelY[index] = prevVelY;
+
+      // for debug
+      uint idx = Index2D(uint(prevPos.x), uint(prevPos.y), uSimResX);
+
+      _curVelY[index] = _prevVelY[idx];
+
+      // for debug
+      //_curVelY[index] = 1.0f;
     } else {
       _curVelY[index] = _prevVelY[index];
     }
@@ -226,6 +247,6 @@ void main() {
   if(pos.x <=0 || pos.y <= 0 || pos.x >= uint(uSimResX-1) || pos.y >= uint(uSimResY-1)) return;
 
   uint index = Index2D(pos.x, pos.y, uSimResX);
-  AdvectVelX(pos, index);
-  AdvectVelY(pos, index);
+  AdvectVelY(pos, index); // has problem
+  AdvectVelX(pos, index); 
 }

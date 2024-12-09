@@ -51,10 +51,10 @@ void main() {
   // I have three different value in _isFuild, 0, -1, 1
   // this line of code may cause neighboursNum = 0 because of the -1
   // which caused an incorrect premature return
-  int rn = _isFluid[RIGHT(index)] < 0.0 ? 0 : 1;
-  int ln = _isFluid[LEFT(index)] < 0.0 ? 0 : 1;
-  int un = _isFluid[UP(index)] < 0.0 ? 0 : 1;
-  int dn = _isFluid[DOWN(index)] < 0.0 ? 0 : 1;
+  int rn = _isFluid[RIGHT(index)] < 0.0 ? 0 : int(_isFluid[RIGHT(index)]);
+  int ln = _isFluid[LEFT(index)] < 0.0 ? 0  : int(_isFluid[LEFT(index)]);
+  int un = _isFluid[UP(index)] < 0.0 ? 0    : int(_isFluid[UP(index)]);
+  int dn = _isFluid[DOWN(index)] < 0.0 ? 0  : int(_isFluid[DOWN(index)]);
 
   //float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
   float neighboursNum = rn + ln + un + dn;

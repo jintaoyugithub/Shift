@@ -70,12 +70,13 @@ void main() {
         float S = min(speed / maxVel, 1.0f);
         float V = min(speed / maxVel, 1.0f);
 
-        float ratio = speed / 1.2f;
+        float ratio = speed / maxVel;
 
-        vec3 color = HSVtoRGB(H, S, V);
+        vec3 color = HSVtoRGB(H, 1.0f, 1.0f);
+        //vec3 color = HSVtoRGB(H, S, V);
 
-        //gl_FragColor = vec4(color * ratio, 1.0);
-        gl_FragColor = vec4(color, 1.0);
+        gl_FragColor = vec4(color * ratio, 1.0);
+        //gl_FragColor = vec4(color, 1.0);
       }
     } else {
       gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);

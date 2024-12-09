@@ -103,7 +103,7 @@ void VelocityFieldGrid::AddSource(int _viewID)
     bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
     bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
     // might need to change the access????
-    bgfx::setBuffer(4, _isFluid, bgfx::Access::Write);
+    bgfx::setBuffer(4, _isFluid, bgfx::Access::ReadWrite);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
     bgfx::dispatch(_viewID, _csAddSource, _groupSizeX, _groupSizeY, _groupSizeZ);
 }
@@ -112,8 +112,8 @@ void VelocityFieldGrid::Advect(int _viewID)
 {
     bgfx::setBuffer(0, _prevVelX, bgfx::Access::Read);
     bgfx::setBuffer(1, _prevVelY, bgfx::Access::Read);
-    bgfx::setBuffer(2, _curVelX, bgfx::Access::ReadWrite);
-    bgfx::setBuffer(3, _curVelY, bgfx::Access::ReadWrite);
+    bgfx::setBuffer(2, _curVelX, bgfx::Access::Write);
+    bgfx::setBuffer(3, _curVelY, bgfx::Access::Write);
     bgfx::setBuffer(4, _isFluid, bgfx::Access::Read);
     bgfx::setUniform(_uhParams, &_uParams, int(UniformType::Count / 4) + 1);
     bgfx::dispatch(_viewID, _csAdvect, _groupSizeX, _groupSizeY, _groupSizeZ);

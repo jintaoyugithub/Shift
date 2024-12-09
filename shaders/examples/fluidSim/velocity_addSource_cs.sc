@@ -5,7 +5,7 @@ BUFFER_RO(_prevVelX, float, 0);
 BUFFER_RO(_prevVelY, float, 1);
 BUFFER_RW(_curVelX, float, 2);
 BUFFER_RW(_curVelY, float, 3);
-BUFFER_WO(_isFluid, float, 4);
+BUFFER_RW(_isFluid, float, 4);
 
 
 NUM_THREADS(8, 8, 1)
@@ -17,7 +17,7 @@ void main() {
   //float dis = distance(pos, vec2(uint(uMousePosX), uint(uSimResY) - uint(uMousePosY)));
   float dis = distance(pos, vec2(uint(uMousePosX), uint(uMousePosY)));
 
-  if(dis < uRadius) {
+  if(dis < uRadius && _isFluid[index] == 1) {
     //_curVelX[index] += uMouseVelX * speedDeltaTime  + _prevVelX[index];
     //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index];
     

@@ -19,8 +19,8 @@ double lastMousePosY = 0.0f;
 bool isPressed = false;
 
 // for debug
-bool EnableAdvect = false;
-bool EnableProject = false;
+bool EnableAdvect = true;
+bool EnableProject = true;
 bool DebugDispDiv = false;
 bool DebugDispProject = false;
 bool DebugDispAdvect = false;
@@ -92,7 +92,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _camera->OnUpdate(deltaTime);
 
-            // std::cout << "FPS: " << 1 / deltaTime << std::endl;
+            std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
             // dispatch advect compute shader
             if (EnableAdvect)
@@ -187,22 +187,20 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
                         // velocityGrid->updateUniforms(UniformType::InterVelY, velDir.y);
 
-
                         // for calculating the velocity dir of the mouse
-                         lastMousePosX = _event.pos.x;
-                         lastMousePosY = _event.pos.y;
+                        lastMousePosX = _event.pos.x;
+                        lastMousePosY = _event.pos.y;
 
                         // for debug
-                        //velocityGrid->updateUniforms(UniformType::InterVelX, -.5f);
-                        //velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
-                        //velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
-
+                        // velocityGrid->updateUniforms(UniformType::InterVelX, -.5f);
+                        // velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
+                        // velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
 
                         // dispatch shader
                         velocityGrid->dispatch(ProgramType::AddSource, 0);
 
                         //  Debug info
-                        //std::cout << velDir.x << " " << -velDir.y << std::endl;
+                        // std::cout << velDir.x << " " << -velDir.y << std::endl;
                     }
                     lastMousePosX = x;
                     lastMousePosY = y;
@@ -227,8 +225,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     {
                         std::cout << "Reset the program" << std::endl;
                         velocityGrid->dispatch(ProgramType::Reset, 0);
-                        EnableAdvect = false;
-                        EnableProject = false;
+                        // EnableAdvect = false;
+                        // EnableProject = false;
                     }
 
                     if (_event.keyboard.key == GLFW_KEY_A)

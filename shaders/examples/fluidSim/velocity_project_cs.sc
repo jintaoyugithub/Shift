@@ -6,7 +6,8 @@ BUFFER_RW(_curVelY, float, 1);
 BUFFER_RO(_isFluid, float, 2);
 BUFFER_WO(_divergence, float, 3);
 
-NUM_THREADS(8, 8, 1)
+//NUM_THREADS(8, 8, 1)
+NUM_THREADS(32, 32, 1)
 void main() {
   uvec2 pos = gl_GlobalInvocationID.xy;
 
@@ -57,7 +58,7 @@ void main() {
   int dn = _isFluid[DOWN(index)] < 0.0 ? 0  : int(_isFluid[DOWN(index)]);
 
   //float neighboursNum = _isFluid[RIGHT(index)] + _isFluid[LEFT(index)] + _isFluid[UP(index)] + _isFluid[DOWN(index)];
-  float neighboursNum = rn + ln + un + dn;
+  float neighboursNum = float(rn + ln + un + dn);
   
   if(neighboursNum == 0) return;
 
@@ -71,16 +72,16 @@ void main() {
   
   /* Debug of the correction value */
   // multiple 1.95 is call overrelaxtion
-  //float correction = 1.5 * divergence / neighboursNum;
+  //float correction = 1.9 * divergence / neighboursNum;
   //float correction = 0.1 * divergence / neighboursNum;
   float correction = divergence / neighboursNum;
 
   // divergence > 0, too much outflow, less out, more in
   // divergence < 0, too much inflow, less in, more out
-  if(_isFluid[LEFT(index)] == 1) _curVelX[index] += correction;
-  if(_isFluid[DOWN(index)] == 1) _curVelY[index] += correction;
+  if(_isFluid[LEFT(index)] == 1)  _curVelX[index]        += correction;
+  if(_isFluid[DOWN(index)] == 1)  _curVelY[index]        += correction;
   if(_isFluid[RIGHT(index)] == 1) _curVelX[RIGHT(index)] -= correction;
-  if(_isFluid[UP(index)] == 1) _curVelY[UP(index)] -= correction;
+  if(_isFluid[UP(index)] == 1)    _curVelY[UP(index)]    -= correction;
 
   // after correction, compute the div again
   float newDiv = _curVelX[RIGHT(index)] - _curVelX[index] + _curVelY[UP(index)] - _curVelY[index]; 

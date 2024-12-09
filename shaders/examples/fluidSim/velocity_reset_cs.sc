@@ -8,7 +8,8 @@ BUFFER_WO(_curVelY, float, 3);
 BUFFER_WO(_isFluid, float, 4);
 BUFFER_WO(_divergence, float, 5);
 
-NUM_THREADS(8, 8, 1)
+//NUM_THREADS(8, 8, 1)
+NUM_THREADS(32, 32, 1)
 void main() {
     // init the density field and velocity field
     vec2 pos = gl_GlobalInvocationID.xy;

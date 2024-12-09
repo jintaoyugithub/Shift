@@ -8,7 +8,8 @@ BUFFER_RW(_curVelY, float, 3);
 BUFFER_RW(_isFluid, float, 4);
 
 
-NUM_THREADS(8, 8, 1)
+//NUM_THREADS(8, 8, 1)
+NUM_THREADS(32, 32, 1)
 void main() {
   uvec2 pos = gl_GlobalInvocationID.xy;
   uint index = Index2D(pos.x, pos.y, uSimResX);
@@ -18,14 +19,15 @@ void main() {
   float dis = distance(pos, vec2(uint(uMousePosX), uint(uMousePosY)));
 
   if(dis < uRadius && _isFluid[index] == 1) {
+  //if(dis < uRadius) {
     //_curVelX[index] += uMouseVelX * speedDeltaTime  + _prevVelX[index];
     //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index];
     
     //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
     //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
     
-    //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
-    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
+    //_curVelX[index] = uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
+    //_curVelY[index] = uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
 
     _curVelX[index] = uMouseVelX * speedDeltaTime;
     _curVelY[index] = uMouseVelY * speedDeltaTime;

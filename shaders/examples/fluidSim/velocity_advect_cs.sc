@@ -196,9 +196,12 @@ void AdvectVelX(uvec2 pos, uint index) {
       float curVelY = InterpolateCurVelY(pos, index); 
       vec2 curVel = vec2(_prevVelX[index], curVelY-0.5f);
 
+      //vec2 curVel = vec2(_prevVelX[index], curVelY);
+
       // calculate the previous position during deltatime
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
-      //vec2 prevPos = vec2(pos) - curVel;
+
+      //prevPos.y -= 1.0f;
       
       // calculate previous velocity X
       float prevVelX = InterpolatePrevVelXNew(prevPos);
@@ -216,22 +219,25 @@ void AdvectVelY(uvec2 pos, uint index) {
       // same as how to advect velocity X
       float curVelX = InterpolateCurVelX(pos, index);  // maight be wrong
       
-      /* For debug */
       vec2 curVel = vec2(curVelX-0.5f, _prevVelY[index]); 
+
+      /* For debug */
+      //vec2 curVel = vec2(curVelX, _prevVelY[index]); 
       //vec2 curVel = vec2(0.0f, _prevVelY[index]); normal
       //vec2 curVel = vec2(-0.5f, _prevVelY[index]); looks like (0.0, ~)
       //vec2 curVel = vec2(-1.0f, _prevVelY[index]); // looks like (-1.0f, ~)
       //vec2 curVel = vec2(0.1f, _prevVelY[index]);  // looks like (1.0f, ~)
 
       vec2 prevPos = vec2(pos) - speedDeltaTime * curVel;
-      //vec2 prevPos = vec2(pos) - curVel;
+      //prevPos.x -= 1.0f;
 
       float prevVelY = InterpolatePrevVelYNew(prevPos);
 
-      // for debug
-      uint idx = Index2D(uint(prevPos.x), uint(prevPos.y), uSimResX);
+      _curVelY[index] = prevVelY;
 
-      _curVelY[index] = _prevVelY[idx];
+      // for debug
+      //uint idx = Index2D(uint(prevPos.x), uint(prevPos.y), uSimResX);
+      //_curVelY[index] = _prevVelY[idx];
 
       // for debug
       //_curVelY[index] = 1.0f;
@@ -240,7 +246,8 @@ void AdvectVelY(uvec2 pos, uint index) {
     }
 }
 
-NUM_THREADS(8, 8, 1)
+//NUM_THREADS(8, 8, 1)
+NUM_THREADS(32, 32, 1)
 void main() {
   // interpolate the velocity of the gaps first
   uvec2 pos = gl_GlobalInvocationID.xy;

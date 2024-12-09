@@ -229,7 +229,7 @@ class VelocityField
     }
 
   public:
-    int solverItr = 50;
+    int solverItr = 10;
 
   protected:
     // group size of compute shader

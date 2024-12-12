@@ -73,8 +73,8 @@ void main() {
   /* Debug of the correction value */
   // multiple 1.95 is call overrelaxtion
   //float correction = 1.9 * divergence / neighboursNum;
-  float correction = 1.3 * divergence / neighboursNum;
-  //float correction = 0.1 * divergence / neighboursNum;
+  float correction = 1.2 * divergence / neighboursNum;
+  //float correction = 0.4 * divergence / neighboursNum;
   //float correction = divergence / neighboursNum;
 
   // divergence > 0, too much outflow, less out, more in

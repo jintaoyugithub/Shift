@@ -19,6 +19,7 @@ void main() {
     _prevVelY[index] = 0.0;
     _curVelX[index] = 0.0;
     _curVelY[index] = 0.0;
+
     _divergence[index] = 0.0;
 
     // determine if the current grid is inside the sim area

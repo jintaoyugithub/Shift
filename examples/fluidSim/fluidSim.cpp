@@ -151,11 +151,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     switch (_event.mouse.button)
                     {
                     case GLFW_MOUSE_BUTTON_LEFT:
-                        std::cout << "left button pressed" << std::endl;
                         isPressed = true;
                         break;
                     case GLFW_MOUSE_BUTTON_RIGHT:
-                        std::cout << "right button pressed" << std::endl;
                         isPressed = true;
                         velocityGrid->updateUniforms(UniformType::IsRightPressed, 1.0f);
                         break;
@@ -215,11 +213,9 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     switch (_event.mouse.button)
                     {
                     case GLFW_MOUSE_BUTTON_LEFT:
-                        std::cout << "left button released" << std::endl;
                         isPressed = false;
                         break;
                     case GLFW_MOUSE_BUTTON_RIGHT:
-                        std::cout << "right button released" << std::endl;
                         isPressed = false;
                         velocityGrid->updateUniforms(UniformType::IsRightPressed, 0.0f);
                         break;
@@ -229,7 +225,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                 case GLEQ_KEY_PRESSED:
                     if (_event.keyboard.key == GLFW_KEY_R)
                     {
-                        std::cout << "Reset the program" << std::endl;
+                        spdlog::info("Reset the program");
                         velocityGrid->dispatch(ProgramType::Reset, 0);
                         EnableAdvect = false;
                         EnableProject = false;
@@ -301,6 +297,24 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     {
                         dirs = VelocityDir::Random;
                         spdlog::info("Current Velocity Dir is based on mouse move dir");
+                    }
+                    if (_event.keyboard.key == GLFW_KEY_MINUS)
+                    {
+                        float curRadius = velocityGrid->getUniforms(UniformType::Radius);
+                        if (curRadius > 0.0f)
+                        {
+                            curRadius -= 1.0f;
+                        }
+                        velocityGrid->updateUniforms(UniformType::Radius, curRadius);
+                        spdlog::info("Current brush radius: {}", curRadius);
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_EQUAL)
+                    {
+                        float curRadius = velocityGrid->getUniforms(UniformType::Radius);
+                        curRadius += 1.0f;
+                        velocityGrid->updateUniforms(UniformType::Radius, curRadius);
+                        spdlog::info("Current brush radius: {}", curRadius);
                     }
                     break;
 

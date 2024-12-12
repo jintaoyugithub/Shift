@@ -54,6 +54,7 @@ void main() {
 
     if(_isFluid[index] == 0) {
       gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
+      //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 
     } else if(_isFluid[index] == 1) {
       if (abs(_curVelX[index]) < 1e-5 && abs(_curVelY[index]) < 1e-5) {
@@ -70,6 +71,7 @@ void main() {
         float V = min(speed / maxVel, 1.0f);
 
         float ratio = speed / maxVel;
+        //float ratio = speed / 1.4f;
 
         vec3 color = HSVtoRGB(H, 1.0f, 1.0f);
         //vec3 color = HSVtoRGB(H, S, V);

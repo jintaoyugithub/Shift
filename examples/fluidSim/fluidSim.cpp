@@ -1,4 +1,5 @@
 #include <appBaseGLFW.hpp>
+#include <exception>
 #include <memory>
 #include <utils/common.hpp>
 
@@ -7,6 +8,7 @@
 #include "bx/string.h"
 #include "fluidSimUtils.hpp"
 #include "gleq.hpp"
+#include "spdlog/spdlog.h"
 #include "tinystl/buffer.h"
 #include "velocityField.hpp"
 #include "velocityFieldCube.hpp"
@@ -30,6 +32,15 @@ float deltaX = 0.01;
 float deltaY = 0.01;
 float deltaZ = 0.01;
 
+enum VelocityDir
+{
+    Left,
+    Right,
+    Up,
+    Down,
+    Random,
+};
+
 class ExampleFluidSim : public shift::AppBaseGLFW
 {
     void init(int _argc, const char **_argv, uint32_t width, uint32_t height) override
@@ -49,7 +60,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
         if (_computeSupported)
         {
             velocityGrid = new VelocityFieldGrid(getWidth(), getHeight(), 1.0f);
-            velocityGrid->updateUniforms(UniformType::Radius, 15.0f);
+            velocityGrid->updateUniforms(UniformType::Radius, 10.0f);
 
             velocityGrid->dispatch(ProgramType::Reset, 0);
         }
@@ -74,7 +85,7 @@ class ExampleFluidSim : public shift::AppBaseGLFW
 
             _camera->OnUpdate(deltaTime);
 
-            std::cout << "FPS: " << 1 / deltaTime << std::endl;
+            // std::cout << "FPS: " << 1 / deltaTime << std::endl;
 
             // dispatch advect compute shader
             if (EnableAdvect)
@@ -145,6 +156,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         break;
                     case GLFW_MOUSE_BUTTON_RIGHT:
                         std::cout << "right button pressed" << std::endl;
+                        isPressed = true;
+                        velocityGrid->updateUniforms(UniformType::IsRightPressed, 1.0f);
                         break;
                     }
                     break;
@@ -154,38 +167,47 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                     glfwGetCursorPos(_window, &x, &y);
                     if (isPressed)
                     {
-                        // set up uniforms
-
-                        // calculate the velocityGrid dir
-                        glm::vec2 velDir = glm::vec2(x - lastMousePosX, y - lastMousePosY);
-                        velDir = glm::normalize(velDir);
-
-                        // update uniforms
                         velocityGrid->updateUniforms(UniformType::InterPosX, x);
                         velocityGrid->updateUniforms(UniformType::InterPosY,
                                                      velocityGrid->getUniforms(UniformType::SimResY) - y);
-                        velocityGrid->updateUniforms(UniformType::InterVelX, velDir.x);
-                        // the origin is in the top left
-                        velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
-                        // velocityGrid->updateUniforms(UniformType::InterVelY, velDir.y);
+                        // set up uniforms
+                        switch (dirs)
+                        {
+                        case Left:
+                            velocityGrid->updateUniforms(UniformType::InterVelX, -1.0f);
+                            velocityGrid->updateUniforms(UniformType::InterVelY, 0.0f);
+                            break;
+                        case Right:
+                            velocityGrid->updateUniforms(UniformType::InterVelX, 1.0f);
+                            velocityGrid->updateUniforms(UniformType::InterVelY, 0.0f);
+                            break;
+                        case Up:
+                            velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
+                            velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
+                            break;
+                        case Down:
+                            velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
+                            velocityGrid->updateUniforms(UniformType::InterVelY, -1.0f);
+                            break;
+                        case Random:
+                            // calculate the velocityGrid dir
+                            glm::vec2 velDir = glm::vec2(x - lastMousePosX, y - lastMousePosY);
+                            velDir = glm::normalize(velDir);
 
-                        // for calculating the velocity dir of the mouse
-                        lastMousePosX = _event.pos.x;
-                        lastMousePosY = _event.pos.y;
+                            // update uniforms
+                            velocityGrid->updateUniforms(UniformType::InterVelX, velDir.x);
+                            // the origin is in the top left
+                            velocityGrid->updateUniforms(UniformType::InterVelY, -velDir.y);
+                            // velocityGrid->updateUniforms(UniformType::InterVelY, velDir.y);
 
-                        // for debug
-                        // velocityGrid->updateUniforms(UniformType::InterVelX, -.5f);
-                        // velocityGrid->updateUniforms(UniformType::InterVelX, 0.0f);
-                        // velocityGrid->updateUniforms(UniformType::InterVelY, 1.0f);
+                            lastMousePosX = x;
+                            lastMousePosY = y;
+                            break;
+                        }
 
-                        // dispatch shader
                         velocityGrid->dispatch(ProgramType::AddSource, 0);
-
-                        //  Debug info
-                        // std::cout << velDir.x << " " << -velDir.y << std::endl;
                     }
-                    lastMousePosX = x;
-                    lastMousePosY = y;
+
                     break;
                 }
 
@@ -198,6 +220,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         break;
                     case GLFW_MOUSE_BUTTON_RIGHT:
                         std::cout << "right button released" << std::endl;
+                        isPressed = false;
+                        velocityGrid->updateUniforms(UniformType::IsRightPressed, 0.0f);
                         break;
                     }
                     break;
@@ -248,6 +272,57 @@ class ExampleFluidSim : public shift::AppBaseGLFW
                         DebugDispProject = false;
                         DebugDispDiv = false;
                     }
+
+                    if (_event.keyboard.key == GLFW_KEY_UP)
+                    {
+                        dirs = VelocityDir::Up;
+                        spdlog::info("Current Velocity Dir: (0.0, 1.0)");
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_DOWN)
+                    {
+                        dirs = VelocityDir::Down;
+                        spdlog::info("Current Velocity Dir: (0.0, -1.0)");
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_LEFT)
+                    {
+                        dirs = VelocityDir::Left;
+                        spdlog::info("Current Velocity Dir: (-1.0, 0.0)");
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_RIGHT)
+                    {
+                        dirs = VelocityDir::Right;
+                        spdlog::info("Current Velocity Dir: (1.0, 0.0)");
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_V)
+                    {
+                        dirs = VelocityDir::Random;
+                        spdlog::info("Current Velocity Dir is based on mouse move dir");
+                    }
+                    break;
+
+                case GLEQ_KEY_REPEATED:
+                    if (_event.keyboard.key == GLFW_KEY_MINUS)
+                    {
+                        float curRadius = velocityGrid->getUniforms(UniformType::Radius);
+                        if (curRadius > 0.0f)
+                        {
+                            curRadius -= 1.0f;
+                        }
+                        velocityGrid->updateUniforms(UniformType::Radius, curRadius);
+                        spdlog::info("Current brush radius: {}", curRadius);
+                    }
+
+                    if (_event.keyboard.key == GLFW_KEY_EQUAL)
+                    {
+                        float curRadius = velocityGrid->getUniforms(UniformType::Radius);
+                        curRadius += 1.0f;
+                        velocityGrid->updateUniforms(UniformType::Radius, curRadius);
+                        spdlog::info("Current brush radius: {}", curRadius);
+                    }
                     break;
 
                 case GLEQ_KEY_RELEASED:
@@ -279,6 +354,8 @@ class ExampleFluidSim : public shift::AppBaseGLFW
     }
 
   private:
+    VelocityDir dirs = VelocityDir::Random;
+
     bool _computeSupported;
     bool _indirectSupported;
 

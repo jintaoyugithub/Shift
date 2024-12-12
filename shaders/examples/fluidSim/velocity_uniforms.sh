@@ -18,6 +18,7 @@ uniform vec4 uParams[5];
 #define uOffsetX                uParams[3].x
 #define uOffsetY                uParams[3].y
 #define uDivOffsetZ             uParams[3].z
+#define uRightMouseBut          uParams[3].w
 
 #define bufferSize 1024
 

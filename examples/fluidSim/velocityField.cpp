@@ -21,6 +21,9 @@ VelocityField::VelocityField(int simResX, int simResY, int simResZ)
     _uParams.divOffsetY = 0.0f;
     _uParams.divOffsetZ = 0.0f;
 
+    // this is specific for the final pre of mamn40 at Lund Uni
+    _uParams.isRightPressed = 0.0f;
+
     // +1 is because when
     _uhParams = bgfx::createUniform("uParams", bgfx::UniformType::Vec4, int(UniformType::Count / 4) + 1);
 

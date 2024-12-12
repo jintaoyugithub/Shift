@@ -3,8 +3,6 @@ $input v2f_texCoord0, v2f_posWS
 #include "../../utils/bgfx_compute.sh"
 #include "velocity_uniforms.sh"
 
-#define bufferSize 512
-
 BUFFER_RO(_isFluid, float, 0);
 BUFFER_RO(_curVelX, float, 1);
 BUFFER_RO(_curVelY, float, 2);

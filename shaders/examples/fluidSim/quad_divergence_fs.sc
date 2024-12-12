@@ -53,6 +53,6 @@ void main() {
     vec4 divColor = DebugDispDiv(_divergence[index], isFluid);
     vec4 actColor = DebugDispActive(isFluid);
 
-    //gl_FragColor = divColor;
-    gl_FragColor = actColor;
+    gl_FragColor = divColor;
+    //gl_FragColor = actColor;
 }

@@ -19,19 +19,12 @@ void main() {
   float dis = distance(pos, vec2(uint(uMousePosX), uint(uMousePosY)));
 
   if(dis < uRadius && _isFluid[index] == 1) {
-  //if(dis < uRadius) {
-    //_curVelX[index] += uMouseVelX * speedDeltaTime  + _prevVelX[index];
-    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index];
-    
-    //_curVelX[index] += uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
-    //_curVelY[index] += uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
-    
-    //_curVelX[index] = uMouseVelX * speedDeltaTime + _prevVelX[index] * uDeltaTime;
-    //_curVelY[index] = uMouseVelY * speedDeltaTime + _prevVelY[index] * uDeltaTime;
-
-    _curVelX[index] = uMouseVelX * speedDeltaTime;
-    _curVelY[index] = uMouseVelY * speedDeltaTime;
-
-    _isFluid[index] = 0.0;
+    if(uRightMouseBut == 1.0) {
+      _isFluid[index] = -1.0f;
+    } else {
+      _curVelX[index] = uMouseVelX * speedDeltaTime;
+      _curVelY[index] = uMouseVelY * speedDeltaTime;
+      _isFluid[index] = 0.0;
+    }
   }
 }

@@ -46,6 +46,9 @@ struct uParams
     float divOffsetX;
     float divOffsetY;
     float divOffsetZ;
+
+    // this is specific for the final pre of mamn40 at Lund Uni
+    float isRightPressed;
 };
 
 enum UniformType
@@ -70,6 +73,9 @@ enum UniformType
     DivOffsetX,
     DivOffsetY,
     DivOffsetZ,
+
+    // this is specific for the final pre of mamn40 at Lund Uni
+    IsRightPressed,
 
     Count,
 };
@@ -210,6 +216,9 @@ class VelocityField
         case UniformType::DivOffsetZ:
             _uParams.divOffsetZ = val;
             break;
+        case UniformType::IsRightPressed:
+            _uParams.isRightPressed = val;
+            break;
         }
     }
 
@@ -223,6 +232,8 @@ class VelocityField
             return _uParams.simResY;
         case UniformType::SimResZ:
             return _uParams.simResZ;
+        case UniformType::Radius:
+            return _uParams.radius;
         }
 
         return 0.0f;

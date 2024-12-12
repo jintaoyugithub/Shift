@@ -20,5 +20,8 @@
 #define GLEQ_STATIC
 #include <gleq.hpp>
 
-const float SHIFT_DEFAULT_WIDTH = 512.0f;
-const float SHIFT_DEFAULT_HEIGHT = 512.0f;
+// const float SHIFT_DEFAULT_WIDTH = 512.0f;
+// const float SHIFT_DEFAULT_HEIGHT = 512.0f;
+
+const float SHIFT_DEFAULT_WIDTH = 1024.0f;
+const float SHIFT_DEFAULT_HEIGHT = 1024.0f;

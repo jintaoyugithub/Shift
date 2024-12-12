@@ -32,7 +32,7 @@
 ### 2024.11.25
 
 - [x] finish `advect` function, we can run interpolate in `afvect` first, then add advect
-- [ ] add camera movement
+- [x] add camera movement
 - [ ] interpolate the velocity after `add source`
 
 ### 2024.12.03

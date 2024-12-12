@@ -19,6 +19,8 @@ uniform vec4 uParams[5];
 #define uOffsetY                uParams[3].y
 #define uDivOffsetZ             uParams[3].z
 
+#define bufferSize 1024
+
 #define speedDeltaTime (uDeltaTime * uSpeed)
 
 uint LEFT(uint idx) {

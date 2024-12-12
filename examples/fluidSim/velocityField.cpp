@@ -16,7 +16,7 @@ VelocityField::VelocityField(int simResX, int simResY, int simResZ)
     _uParams.simResY = float(simResY);
     _uParams.simResZ = float(simResZ);
     _uParams.deltaTime = 0.02f;
-    _uParams.speed = 75.0f;
+    _uParams.speed = 120.0f;
     _uParams.divOffsetX = 0.0f;
     _uParams.divOffsetY = 0.0f;
     _uParams.divOffsetZ = 0.0f;
